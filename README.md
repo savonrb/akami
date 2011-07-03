@@ -54,5 +54,9 @@ wsse["wsse:Security"]["wsse:UsernameToken"] = { "Organization" => "ACME" }
 ```
 
 When generating the XML for the request, this Hash will be merged with another Hash containing
-all the default tags and values. This way you might digg into some code, but then you can even
-overwrite the default values.
+all the default tags and values.  
+This way you might digg into some code, but then you can even overwrite the default values.
+
+``` ruby
+wsse.to_xml
+```
