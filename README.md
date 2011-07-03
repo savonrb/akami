@@ -45,7 +45,7 @@ Manually specify the values for `wsu:Created` and `wsu:Expires`:
 ``` ruby
 wsse.created_at = Time.now
 wsse.expires_at = Time.now + 60
-``
+```
 
 Akami is based on an autovivificating Hash. So if you need to add custom tags, you can add them.
 
