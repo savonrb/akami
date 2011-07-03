@@ -21,19 +21,19 @@ Getting started
 wsse = Akami.wsse
 ```
 
-Set the credentials for wsse:UsernameToken basic auth:
+Set the credentials for `wsse:UsernameToken` basic auth:
 
 ``` ruby
 wsse.credentials "username", "password"
 ```
 
-Set the credentials for wsse:UsernameToken digest auth:
+Set the credentials for `wsse:UsernameToken` digest auth:
 
 ``` ruby
 wsse.credentials "username", "password", :digest
 ```
 
-Enable wsu:Timestamp headers. `wsu:Created` is automatically set to `Time.now`
+Enable `wsu:Timestamp` headers. `wsu:Created` is automatically set to `Time.now`
 and `wsu:Expires` is set to `Time.now + 60`:
 
 ``` ruby
