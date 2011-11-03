@@ -171,14 +171,14 @@ describe Akami do
       it "contains a wsu:Created node defaulting to Time.now" do
         created_at = Time.now
         Timecop.freeze created_at do
-          wsse.to_xml.should include("<wsu:Created>#{created_at.xs_datetime}</wsu:Created>")
+          wsse.to_xml.should include("<wsu:Created>#{created_at.xmlschema}</wsu:Created>")
         end
       end
 
       it "contains a wsu:Expires node defaulting to Time.now + 60 seconds" do
         created_at = Time.now
         Timecop.freeze created_at do
-          wsse.to_xml.should include("<wsu:Expires>#{(created_at + 60).xs_datetime}</wsu:Expires>")
+          wsse.to_xml.should include("<wsu:Expires>#{(created_at + 60).xmlschema}</wsu:Expires>")
         end
       end
     end
@@ -187,11 +187,11 @@ describe Akami do
       before { wsse.created_at = Time.now + 86400 }
 
       it "contains a wsu:Created node with the given time" do
-        wsse.to_xml.should include("<wsu:Created>#{wsse.created_at.xs_datetime}</wsu:Created>")
+        wsse.to_xml.should include("<wsu:Created>#{wsse.created_at.xmlschema}</wsu:Created>")
       end
 
       it "contains a wsu:Expires node set to #created_at + 60 seconds" do
-        wsse.to_xml.should include("<wsu:Expires>#{(wsse.created_at + 60).xs_datetime}</wsu:Expires>")
+        wsse.to_xml.should include("<wsu:Expires>#{(wsse.created_at + 60).xmlschema}</wsu:Expires>")
       end
     end
 
@@ -201,12 +201,12 @@ describe Akami do
       it "contains a wsu:Created node defaulting to Time.now" do
         created_at = Time.now
         Timecop.freeze created_at do
-          wsse.to_xml.should include("<wsu:Created>#{created_at.xs_datetime}</wsu:Created>")
+          wsse.to_xml.should include("<wsu:Created>#{created_at.xmlschema}</wsu:Created>")
         end
       end
 
       it "contains a wsu:Expires node set to the given time" do
-        wsse.to_xml.should include("<wsu:Expires>#{wsse.expires_at.xs_datetime}</wsu:Expires>")
+        wsse.to_xml.should include("<wsu:Expires>#{wsse.expires_at.xmlschema}</wsu:Expires>")
       end
     end
 

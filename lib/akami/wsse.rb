@@ -1,6 +1,6 @@
 require "base64"
 require "digest/sha1"
-require "akami/core_ext/time"
+require "time"
 require "gyoku"
 
 module Akami
@@ -103,8 +103,8 @@ module Akami
     # Returns a Hash containing wsu:Timestamp details.
     def wsu_timestamp
       security_hash :wsu, "Timestamp",
-        "wsu:Created" => (created_at || Time.now).xs_datetime,
-        "wsu:Expires" => (expires_at || (created_at || Time.now) + 60).xs_datetime
+        "wsu:Created" => (created_at || Time.now).xmlschema,
+        "wsu:Expires" => (expires_at || (created_at || Time.now) + 60).xmlschema
     end
 
     # Returns a Hash containing wsse/wsu Security details for a given
@@ -137,7 +137,7 @@ module Akami
 
     # Returns a WSSE timestamp.
     def timestamp
-      @timestamp ||= Time.now.xs_datetime
+      @timestamp ||= Time.now.xmlschema
     end
 
     # Returns a new number with every call.
