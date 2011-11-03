@@ -1,9 +1,9 @@
 require "base64"
 require "digest/sha1"
 require "akami/core_ext/hash"
-require "akami/core_ext/time"
 require "akami/xpath_helper"
 require "akami/c14n_helper"
+require "time"
 require "gyoku"
 
 require "akami/wsse/verify_signature"
@@ -47,11 +47,11 @@ module Akami
     end
 
     attr_accessor :username, :password, :created_at, :expires_at, :signature, :verify_response
-    
+
     def sign_with=(klass)
       @signature = klass
     end
-    
+
     def signature?
       !!@signature
     end
@@ -137,8 +137,8 @@ module Akami
     # Returns a Hash containing wsu:Timestamp details.
     def wsu_timestamp
       security_hash :wsu, "Timestamp",
-        "wsu:Created" => (created_at || Time.now).xs_datetime,
-        "wsu:Expires" => (expires_at || (created_at || Time.now) + 60).xs_datetime
+        "wsu:Created" => (created_at || Time.now).xmlschema,
+        "wsu:Expires" => (expires_at || (created_at || Time.now) + 60).xmlschema
     end
 
     # Returns a Hash containing wsse/wsu Security details for a given
@@ -184,7 +184,7 @@ module Akami
 
     # Returns a WSSE timestamp.
     def timestamp
-      @timestamp ||= Time.now.xs_datetime
+      @timestamp ||= Time.now.xmlschema
     end
 
     # Returns a new number with every call.
