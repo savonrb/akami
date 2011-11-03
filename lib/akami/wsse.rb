@@ -137,8 +137,8 @@ module Akami
     # Returns a Hash containing wsu:Timestamp details.
     def wsu_timestamp
       security_hash :wsu, "Timestamp",
-        "wsu:Created" => (created_at || Time.now).xmlschema,
-        "wsu:Expires" => (expires_at || (created_at || Time.now) + 60).xmlschema
+        "wsu:Created" => (created_at || Time.now).utc.xmlschema,
+        "wsu:Expires" => (expires_at || (created_at || Time.now) + 60).utc.xmlschema
     end
 
     # Returns a Hash containing wsse/wsu Security details for a given
