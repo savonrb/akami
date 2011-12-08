@@ -1,4 +1,5 @@
 require "spec_helper"
+require "base64"
 
 describe Akami do
   let(:wsse) { Akami.wsse }
@@ -147,16 +148,37 @@ describe Akami do
       end
 
       it "contains a wsse:Nonce tag" do
-        wsse.to_xml.should match(/<wsse:Nonce>\w+<\/wsse:Nonce>/)
+        wsse.to_xml.should match(/<wsse:Nonce>[^<]+<\/wsse:Nonce>/)
       end
 
       it "contains a wsu:Created tag" do
-        datetime_regexp = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
-        wsse.to_xml.should match(/<wsu:Created>#{datetime_regexp}.+<\/wsu:Created>/)
+        created_at = Time.now
+        Timecop.freeze created_at do
+          wsse.to_xml.should include("<wsu:Created>#{created_at.utc.xmlschema}</wsu:Created>")
+        end
       end
 
       it "contains the PasswordDigest type attribute" do
         wsse.to_xml.should include(Akami::WSSE::PASSWORD_DIGEST_URI)
+      end
+
+      it "should reset the nonce every time" do
+        created_at = Time.now
+        Timecop.freeze created_at do
+          nonce_regexp = /<wsse:Nonce>([^<]+)<\/wsse:Nonce>/
+          nonce_first = Base64.decode64(nonce_regexp.match(wsse.to_xml)[1])
+          nonce_second = Base64.decode64(nonce_regexp.match(wsse.to_xml)[1])
+          nonce_first.should_not == nonce_second
+        end
+      end
+
+      it "has contains a properly hashed password" do
+        xml_header = Nokogiri::XML(wsse.to_xml)
+        xml_header.remove_namespaces!
+        nonce = Base64.decode64(xml_header.xpath('//Nonce').first.content)
+        created_at = xml_header.xpath('//Created').first.content
+        password_hash = Base64.decode64(xml_header.xpath('//Password').first.content)
+        password_hash.should == Digest::SHA1.digest((nonce + created_at + "password"))
       end
     end
 
