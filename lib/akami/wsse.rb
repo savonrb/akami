@@ -1,6 +1,6 @@
 require "base64"
 require "digest/sha1"
-require "akami/core_ext/time"
+require "time"
 require "gyoku"
 
 module Akami
@@ -86,25 +86,28 @@ module Akami
     # Returns a Hash containing wsse:UsernameToken details.
     def wsse_username_token
       if digest?
-        security_hash :wsse, "UsernameToken",
+        token = security_hash :wsse, "UsernameToken",
           "wsse:Username" => username,
-          "wsse:Nonce" => nonce,
+          "wsse:Nonce" => Base64.encode64(nonce),
           "wsu:Created" => timestamp,
           "wsse:Password" => digest_password,
           :attributes! => { "wsse:Password" => { "Type" => PASSWORD_DIGEST_URI } }
+        # clear the nonce after each use
+        @nonce = nil
       else
-        security_hash :wsse, "UsernameToken",
+        token = security_hash :wsse, "UsernameToken",
           "wsse:Username" => username,
           "wsse:Password" => password,
           :attributes! => { "wsse:Password" => { "Type" => PASSWORD_TEXT_URI } }
       end
+      token
     end
 
     # Returns a Hash containing wsu:Timestamp details.
     def wsu_timestamp
       security_hash :wsu, "Timestamp",
-        "wsu:Created" => (created_at || Time.now).xs_datetime,
-        "wsu:Expires" => (expires_at || (created_at || Time.now) + 60).xs_datetime
+        "wsu:Created" => (created_at || Time.now).utc.xmlschema,
+        "wsu:Expires" => (expires_at || (created_at || Time.now) + 60).utc.xmlschema
     end
 
     # Returns a Hash containing wsse/wsu Security details for a given
@@ -122,7 +125,7 @@ module Akami
     # Returns the WSSE password, encrypted for digest authentication.
     def digest_password
       token = nonce + timestamp + password
-      Base64.encode64(Digest::SHA1.hexdigest(token)).chomp!
+      Base64.encode64(Digest::SHA1.digest(token)).chomp!
     end
 
     # Returns a WSSE nonce.
@@ -137,7 +140,7 @@ module Akami
 
     # Returns a WSSE timestamp.
     def timestamp
-      @timestamp ||= Time.now.xs_datetime
+      @timestamp ||= Time.now.utc.xmlschema
     end
 
     # Returns a new number with every call.
