@@ -1,7 +1,11 @@
 require "base64"
 require "digest/sha1"
+require "akami/core_ext/hash"
 require "akami/core_ext/time"
 require "gyoku"
+
+require "akami/wsse/verify_signature"
+require "akami/wsse/signature"
 
 module Akami
 
@@ -40,7 +44,15 @@ module Akami
       self.digest = digest
     end
 
-    attr_accessor :username, :password, :created_at, :expires_at
+    attr_accessor :username, :password, :created_at, :expires_at, :signature, :verify_response
+    
+    def sign_with=(klass)
+      @signature = klass
+    end
+    
+    def signature?
+      !!@signature
+    end
 
     # Returns whether to use WSSE digest. Defaults to +false+.
     def digest?
@@ -64,9 +76,20 @@ module Akami
       @wsu_timestamp = timestamp
     end
 
+    # Hook for Soap::XML that allows us to add attributes to the env:Body tag
+    def body_attributes
+      if signature?
+        signature.body_attributes
+      else
+        {}
+      end
+    end
+
     # Returns the XML for a WSSE header.
     def to_xml
-      if username_token? && timestamp?
+      if signature? and signature.have_document?
+        Gyoku.xml wsse_signature.merge!(hash)
+      elsif username_token? && timestamp?
         Gyoku.xml wsse_username_token.merge!(wsu_timestamp) {
           |key, v1, v2| v1.merge!(v2) {
             |key, v1, v2| v1.merge!(v2)
@@ -100,6 +123,15 @@ module Akami
       end
     end
 
+    def wsse_signature
+      signature_hash = signature.to_token
+
+      # First key/value is tag/hash
+      tag, hash = signature_hash.shift
+
+      security_hash nil, tag, hash, signature_hash
+    end
+
     # Returns a Hash containing wsu:Timestamp details.
     def wsu_timestamp
       security_hash :wsu, "Timestamp",
@@ -109,14 +141,27 @@ module Akami
 
     # Returns a Hash containing wsse/wsu Security details for a given
     # +namespace+, +tag+ and +hash+.
-    def security_hash(namespace, tag, hash)
-      {
+    def security_hash(namespace, tag, hash, extra_info = {})
+      key = [namespace, tag].compact.join(":")
+
+      sec_hash = {
         "wsse:Security" => {
-          "#{namespace}:#{tag}" => hash,
-          :attributes! => { "#{namespace}:#{tag}" => { "wsu:Id" => "#{tag}-#{count}", "xmlns:wsu" => WSU_NAMESPACE } }
+          key => hash
         },
         :attributes! => { "wsse:Security" => { "xmlns:wsse" => WSE_NAMESPACE } }
       }
+
+      unless extra_info.empty?
+        sec_hash["wsse:Security"].merge!(extra_info)
+      end
+
+      if signature?
+        sec_hash[:attributes!].merge!("soapenv:mustUnderstand" => "1")
+      else
+        sec_hash["wsse:Security"].merge!(:attributes! => { key => { "wsu:Id" => "#{tag}-#{count}", "xmlns:wsu" => WSU_NAMESPACE } })
+      end
+
+      sec_hash
     end
 
     # Returns the WSSE password, encrypted for digest authentication.
