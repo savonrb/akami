@@ -69,6 +69,50 @@ describe Akami do
       wsse.should be_digest
     end
   end
+  
+  describe "#wse_namespace" do
+    it "returns the default wse namespace" do
+      wsse.wse_namespace.should == Akami::WSSE::WSE_NAMESPACE
+    end
+    
+    it "sets the wse_namespace" do
+      wsse.wse_namespace = "test"
+      wsse.wse_namespace.should == "test"
+    end
+  end
+  
+  describe "#wsu_namespace" do
+    it "returns the default wsu namespace" do
+      wsse.wsu_namespace.should == Akami::WSSE::WSU_NAMESPACE
+    end
+    
+    it "sets the wsu_namespace" do
+      wsse.wsu_namespace = "test"
+      wsse.wsu_namespace.should == "test"
+    end
+  end
+  
+  describe "#password_text_uri" do
+    it "returns the default password text uri" do
+      wsse.password_text_uri.should == Akami::WSSE::PASSWORD_TEXT_URI
+    end
+    
+    it "sets the password_text_uri" do
+      wsse.password_text_uri = "test"
+      wsse.password_text_uri.should == "test"
+    end
+  end
+  
+  describe "#password_digest_uri" do
+    it "returns the default password digest uri" do
+      wsse.password_digest_uri.should == Akami::WSSE::PASSWORD_DIGEST_URI
+    end
+    
+    it "sets the password_digest_uri" do
+      wsse.password_digest_uri = "test"
+      wsse.password_digest_uri.should == "test"
+    end
+  end
 
   describe "#to_xml" do
     context "with no credentials" do
