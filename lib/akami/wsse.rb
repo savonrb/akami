@@ -9,6 +9,12 @@ module Akami
   #
   # Building Web Service Security.
   class WSSE
+    
+    #Configurable Attributes
+    [:wse_namespace, :wsu_namespace, :password_text_uri, :password_digest_uri].each do |attribute|
+      attr_accessor attribute
+      attr_writer attribute
+    end
 
     # Namespace for WS Security Secext.
     WSE_NAMESPACE = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"
@@ -21,6 +27,13 @@ module Akami
 
     # PasswordDigest URI.
     PASSWORD_DIGEST_URI = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest"
+
+    def initialize
+      @wse_namespace = WSE_NAMESPACE
+      @wsu_namespace = WSU_NAMESPACE
+      @password_text_uri = PASSWORD_TEXT_URI
+      @password_digest_uri = PASSWORD_DIGEST_URI
+    end
 
     # Returns a value from the WSSE Hash.
     def [](key)
@@ -113,9 +126,9 @@ module Akami
       {
         "wsse:Security" => {
           "#{namespace}:#{tag}" => hash,
-          :attributes! => { "#{namespace}:#{tag}" => { "wsu:Id" => "#{tag}-#{count}", "xmlns:wsu" => WSU_NAMESPACE } }
+          :attributes! => { "#{namespace}:#{tag}" => { "wsu:Id" => "#{tag}-#{count}", "xmlns:wsu" => @wsu_namespace } }
         },
-        :attributes! => { "wsse:Security" => { "xmlns:wsse" => WSE_NAMESPACE } }
+        :attributes! => { "wsse:Security" => { "xmlns:wsse" => @wse_namespace } }
       }
     end
 
