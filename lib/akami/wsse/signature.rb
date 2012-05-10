@@ -1,11 +1,11 @@
 require "akami/wsse/certs"
-require "akami/wsse/canonicalizer"
 
 module Akami
   class WSSE
     class Signature
+      include Akami::XPathHelper
+      include Akami::C14nHelper
 
-      class EmptyCanonicalization < RuntimeError; end
       class MissingCertificate < RuntimeError; end
 
       # For a +Savon::WSSE::Certs+ object. To hold the certs we need to sign.
@@ -13,7 +13,13 @@ module Akami
 
       # Without a document, the document cannot be signed.
       # Generate the document once, and then set document and recall #to_token
-      attr_accessor :document
+      def document
+        @document ? @document.to_s : nil
+      end
+
+      def document=(document)
+        @document = Nokogiri::XML(document)
+      end
 
       ExclusiveXMLCanonicalizationAlgorithm = 'http://www.w3.org/2001/10/xml-exc-c14n#'.freeze
       RSASHA1SignatureAlgorithm = 'http://www.w3.org/2000/09/xmldsig#rsa-sha1'.freeze
@@ -108,7 +114,7 @@ module Akami
 
       def signature_value
         { "SignatureValue" => the_signature }
-      rescue EmptyCanonicalization, MissingCertificate
+      rescue MissingCertificate
         {}
       end
 
@@ -133,23 +139,15 @@ module Akami
 
       def the_signature
         raise MissingCertificate, "Expected a private_key for signing" unless certs.private_key
-        xml = canonicalize("SignedInfo")
-        signature = certs.private_key.sign(OpenSSL::Digest::SHA1.new, xml)
+        signed_info = at_xpath(@document, "//Envelope/Header/Security/Signature/SignedInfo")
+        signed_info = signed_info ? canonicalize(signed_info) : ""
+        signature = certs.private_key.sign(OpenSSL::Digest::SHA1.new, signed_info)
         Base64.encode64(signature).gsub("\n", '') # TODO: DRY calls to Base64.encode64(...).gsub("\n", '')
       end
 
       def body_digest
-        xml_digest("soapenv:Body")
-      end
-
-      def canonicalize(xml_element)
-        canonicalized_element = Canonicalizer.canonicalize(document, xml_element)
-        raise EmptyCanonicalization, "Expected to canonicalize #{xml_element.inspect} within: #{document}" if canonicalized_element.blank?
-        canonicalized_element
-      end
-
-      def xml_digest(xml_element)
-        Base64.encode64(OpenSSL::Digest::SHA1.digest(canonicalize(xml_element))).strip
+        body = canonicalize(at_xpath(@document, "//Envelope/Body"))
+        Base64.encode64(OpenSSL::Digest::SHA1.digest(body)).strip
       end
 
       def signed_info_digest_method

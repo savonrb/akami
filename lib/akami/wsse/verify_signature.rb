@@ -1,11 +1,10 @@
-require 'rexml/document'
-require 'akami/wsse/canonicalizer'
-
 module Akami
   class WSSE
     class InvalidSignature < RuntimeError; end
 
     class VerifySignature
+      include Akami::XPathHelper
+      include Akami::C14nHelper
 
       class InvalidDigest < RuntimeError; end
       class InvalidSignedValue < RuntimeError; end
@@ -29,12 +28,12 @@ module Akami
       end
 
       def signature_value
-        element = element_for_xpath("//wsse:Security/Signature/SignatureValue")
+        element = element_for_xpath("//Security/Signature/SignatureValue")
         element ? element.text : ""
       end
 
       def certificate
-        certificate_value = element_for_xpath("//wsse:Security/wsse:BinarySecurityToken").text.strip
+        certificate_value = element_for_xpath("//Security/BinarySecurityToken").text.strip
         OpenSSL::X509::Certificate.new Base64.decode64(certificate_value)
       end
 
@@ -53,7 +52,7 @@ module Akami
       private
 
       def verify
-        REXML::XPath.each(document, "//wsse:Security/Signature/SignedInfo/Reference") do |ref|
+        xpath(document, "//Security/Signature/SignedInfo/Reference").each do |ref|
           element_id = ref.attributes["URI"][1..-1] # strip leading '#'
           element = element_for_xpath(%(//*[@wsu:Id="#{element_id}"]))
           raise InvalidDigest, "Invalid Digest for #{element_id}" unless supplied_digest(element) == generate_digest(element)
@@ -66,23 +65,19 @@ module Akami
       end
 
       def create_document
-        REXML::Document.new response_body
+        Nokogiri::XML response_body
       end
 
       def element_for_xpath(xpath)
-        REXML::XPath.first(document, xpath)
-      end
-
-      def canonicalize(element)
-        Canonicalizer.canonicalize(response_body, element)
+        document.at_xpath xpath
       end
 
       def signed_info
-        REXML::XPath.first(document, "//wsse:Security/Signature/SignedInfo")
+        at_xpath document, "//Security/Signature/SignedInfo"
       end
 
       def find_digest_value(id)
-        REXML::XPath.first(document, %(//wsse:Security/Signature/SignedInfo/Reference[@URI="##{id}"]/DigestValue)).text
+        at_xpath(document, %(//Security/Signature/SignedInfo/Reference[@URI="##{id}"]/DigestValue)).text
       end
 
       def digest(string)

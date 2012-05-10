@@ -2,6 +2,8 @@ require "base64"
 require "digest/sha1"
 require "akami/core_ext/hash"
 require "akami/core_ext/time"
+require "akami/xpath_helper"
+require "akami/c14n_helper"
 require "gyoku"
 
 require "akami/wsse/verify_signature"
