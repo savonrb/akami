@@ -224,7 +224,7 @@ describe Akami do
       end
     end
 
-    context "whith credentials and timestamp" do
+    context "with credentials and timestamp" do
       before do
         wsse.credentials "username", "password"
         wsse.timestamp = true
@@ -240,6 +240,9 @@ describe Akami do
 
       it "contains the username and password" do
         wsse.to_xml.should include("username", "password")
+        wsse["wsse:Security"]["wsse:UsernameToken"] = { "Organization" => "ACME" }
+        wsse.to_xml.should include("username", "password")
+        wsse.to_xml.should include("Organization")
       end
     end
   end

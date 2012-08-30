@@ -96,10 +96,10 @@ module Akami
           |key, v1, v2| v1.merge!(v2) {
             |key, v1, v2| v1.merge!(v2)
           }
-        }
+        }.deep_merge!(hash)
       elsif username_token?
         Gyoku.xml wsse_username_token.deep_merge!(hash)
-      elsif timestamp?
+      elsif timestamp? 
         Gyoku.xml wsu_timestamp.deep_merge!(hash)
       else
         ""
