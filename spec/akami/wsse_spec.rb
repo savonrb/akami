@@ -129,6 +129,13 @@ describe Akami do
       it "contains the PasswordText type attribute" do
         wsse.to_xml.should include(Akami::WSSE::PASSWORD_TEXT_URI)
       end
+
+      it "doesn't overwrite the wsse:Security node when adding custom tags" do
+        wsse.to_xml.should include("username", "password")
+        wsse["wsse:Security"]["wsse:UsernameToken"] = { "Organization" => "ACME" }
+        wsse.to_xml.should include("username", "password")
+        wsse.to_xml.should include("Organization")
+      end
     end
 
     context "with credentials and digest auth" do

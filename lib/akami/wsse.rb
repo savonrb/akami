@@ -98,7 +98,7 @@ module Akami
           }
         }
       elsif username_token?
-        Gyoku.xml wsse_username_token.merge!(hash)
+        Gyoku.xml wsse_username_token.deep_merge!(hash)
       elsif timestamp?
         Gyoku.xml wsu_timestamp.merge!(hash)
       else
