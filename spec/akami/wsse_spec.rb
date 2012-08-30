@@ -188,6 +188,13 @@ describe Akami do
           wsse.to_xml.should include("<wsu:Expires>#{(created_at + 60).utc.xmlschema}</wsu:Expires>")
         end
       end
+
+      it "doesn't overwrite the wsu:Timestamp when adding custom tags" do
+        wsse.to_xml.should include('<wsu:Timestamp wsu:Id="Timestamp-1" ' + 'xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">')
+        wsse["wsse:Security"]["wsse:UsernameToken"] = { "Organization" => "ACME" }
+        wsse.to_xml.should include('<wsu:Timestamp wsu:Id="Timestamp-2" ' + 'xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd">')
+        wsse.to_xml.should include("Organization")
+      end
     end
 
     context "with #created_at" do
