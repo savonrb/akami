@@ -111,18 +111,21 @@ module Akami
     # Returns a Hash containing wsse:UsernameToken details.
     def wsse_username_token
       if digest?
-        security_hash :wsse, "UsernameToken",
+        token = security_hash :wsse, "UsernameToken",
           "wsse:Username" => username,
-          "wsse:Nonce" => nonce,
+          "wsse:Nonce" => Base64.encode64(nonce),
           "wsu:Created" => timestamp,
           "wsse:Password" => digest_password,
           :attributes! => { "wsse:Password" => { "Type" => PASSWORD_DIGEST_URI } }
+        # clear the nonce after each use
+        @nonce = nil
       else
-        security_hash :wsse, "UsernameToken",
+        token = security_hash :wsse, "UsernameToken",
           "wsse:Username" => username,
           "wsse:Password" => password,
           :attributes! => { "wsse:Password" => { "Type" => PASSWORD_TEXT_URI } }
       end
+      token
     end
 
     def wsse_signature
@@ -169,7 +172,7 @@ module Akami
     # Returns the WSSE password, encrypted for digest authentication.
     def digest_password
       token = nonce + timestamp + password
-      Base64.encode64(Digest::SHA1.hexdigest(token)).chomp!
+      Base64.encode64(Digest::SHA1.digest(token)).chomp!
     end
 
     # Returns a WSSE nonce.
@@ -184,7 +187,7 @@ module Akami
 
     # Returns a WSSE timestamp.
     def timestamp
-      @timestamp ||= Time.now.xmlschema
+      @timestamp ||= Time.now.utc.xmlschema
     end
 
     # Returns a new number with every call.

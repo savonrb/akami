@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "mocha",   "~> 0.9.8"
   s.add_development_dependency "timecop", "~> 0.3.5"
   s.add_development_dependency "autotest"
+  s.add_development_dependency "nokogiri"
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
