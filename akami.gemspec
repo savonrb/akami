@@ -16,11 +16,10 @@ Gem::Specification.new do |s|
   s.add_dependency "gyoku", ">= 0.4.0"
   s.add_dependency "nokogiri", ">= 1.4.0"
 
-  s.add_development_dependency "rake",    "~> 0.8.7"
-  s.add_development_dependency "rspec",   "~> 2.5.0"
-  s.add_development_dependency "mocha",   "~> 0.9.8"
-  s.add_development_dependency "timecop", "~> 0.3.5"
-  s.add_development_dependency "autotest"
+  s.add_development_dependency "rake",    "~> 10.0"
+  s.add_development_dependency "rspec",   "~> 2.12"
+  s.add_development_dependency "mocha",   "~> 0.13"
+  s.add_development_dependency "timecop", "~> 0.5"
   s.add_development_dependency "nokogiri"
 
   s.files         = `git ls-files`.split("\n")
