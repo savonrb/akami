@@ -1,3 +1,8 @@
+## master
+
+* Fix: [#2](https://github.com/savonrb/akami/pull/2) Fixes related to WS-Security,
+  UserToken authentication.
+
 ## 1.2.0 (2012-06-28)
 
 * Fix: Lowered the version of Nokogiri required to use Akami.
