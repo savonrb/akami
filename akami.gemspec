@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.version     = Akami::VERSION
   s.authors     = ["Daniel Harrington"]
   s.email       = ["me@rubiii.com"]
-  s.homepage    = "https://github.com/rubiii/#{s.name}"
+  s.homepage    = "https://github.com/savonrb/#{s.name}"
   s.summary     = "Web Service Security"
   s.description = "Building Web Service Security"
 

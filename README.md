@@ -1,4 +1,4 @@
-Akami [![Build Status](http://travis-ci.org/rubiii/akami.png)](http://travis-ci.org/rubiii/akami)
+Akami [![Build Status](http://travis-ci.org/savonrb/akami.png)](http://travis-ci.org/savonrb/akami)
 =====
 
 Building Web Service Security.
