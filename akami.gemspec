@@ -12,6 +12,7 @@ Gem::Specification.new do |s|
   s.description = "Building Web Service Security"
 
   s.rubyforge_project = s.name
+  s.license = "MIT"
 
   s.add_dependency "gyoku", ">= 0.4.0"
   s.add_dependency "nokogiri", ">= 1.4.0"
