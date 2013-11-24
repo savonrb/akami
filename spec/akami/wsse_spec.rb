@@ -1,5 +1,6 @@
-require "spec_helper"
-require "base64"
+require 'spec_helper'
+require 'base64'
+require 'nokogiri'
 
 describe Akami do
   let(:wsse) { Akami.wsse }
