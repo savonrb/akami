@@ -1,5 +1,6 @@
 ## master
 
+## 1.2.1 (2014-01-31)
 * Fix: [#2](https://github.com/savonrb/akami/pull/2) Fixes related to WS-Security,
   UserToken authentication.
 
