@@ -25,6 +25,11 @@ describe Akami do
       "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest"
   end
 
+  it "contains the namespace for Base64 Encoding type" do 
+    Akami::WSSE::BASE64_URI.should == 
+      "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary"
+  end
+
   describe "#credentials" do
     it "sets the username" do
       wsse.credentials "username", "password"
@@ -121,7 +126,7 @@ describe Akami do
       end
 
       it "does not contain a wsse:Nonce tag" do
-        wsse.to_xml.should_not match(/<wsse:Nonce>.*<\/wsse:Nonce>/)
+        wsse.to_xml.should_not match(/<wsse:Nonce.*>.*<\/wsse:Nonce>/)
       end
 
       it "does not contain a wsu:Created tag" do
@@ -148,8 +153,8 @@ describe Akami do
         wsse.to_xml.should_not include("password")
       end
 
-      it "contains a wsse:Nonce tag" do
-        wsse.to_xml.should match(/<wsse:Nonce>[^<]+<\/wsse:Nonce>/)
+      it "contains the Nonce base64 type attribute" do
+        wsse.to_xml.should include(Akami::WSSE::BASE64_URI)
       end
 
       it "contains a wsu:Created tag" do
@@ -166,7 +171,7 @@ describe Akami do
       it "should reset the nonce every time" do
         created_at = Time.now
         Timecop.freeze created_at do
-          nonce_regexp = /<wsse:Nonce>([^<]+)<\/wsse:Nonce>/
+          nonce_regexp = /<wsse:Nonce.*>([^<]+)<\/wsse:Nonce>/
           nonce_first = Base64.decode64(nonce_regexp.match(wsse.to_xml)[1])
           nonce_second = Base64.decode64(nonce_regexp.match(wsse.to_xml)[1])
           nonce_first.should_not == nonce_second
