@@ -28,6 +28,8 @@ module Akami
     # PasswordDigest URI.
     PASSWORD_DIGEST_URI = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordDigest"
 
+    BASE64_URI = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary"
+
     # Returns a value from the WSSE Hash.
     def [](key)
       hash[key]
@@ -116,7 +118,7 @@ module Akami
           "wsse:Nonce" => Base64.encode64(nonce),
           "wsu:Created" => timestamp,
           "wsse:Password" => digest_password,
-          :attributes! => { "wsse:Password" => { "Type" => PASSWORD_DIGEST_URI } }
+          :attributes! => { "wsse:Password" => { "Type" => PASSWORD_DIGEST_URI },  "wsse:Nonce" => { "EncodingType" => BASE64_URI } }
         # clear the nonce after each use
         @nonce = nil
       else
