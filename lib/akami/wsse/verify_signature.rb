@@ -14,7 +14,7 @@ module Akami
       attr_reader :document
 
       def initialize(xml)
-        @document = Nokogiri::XML(xml)
+        @document = Nokogiri::XML(xml.to_s, &:noblanks)
       end
 
       # Returns XML namespaces that are used internally for document querying.

@@ -14,6 +14,12 @@ describe Akami::WSSE::VerifySignature do
     validator.verify!.should eq(true)
   end
 
+  it 'should validate correctly signed XML messages with whitespaces' do
+    xml = fixture('akami/wsse/verify_signature/valid_whitespaces.xml')
+    validator = described_class.new(xml)
+    expect(validator.verify!).to equal(true)
+  end
+
   it 'should not validate signed XML messages with digested content changed' do
     xml = fixture('akami/wsse/verify_signature/invalid_digested_changed.xml')
     validator = described_class.new(xml)
