@@ -132,10 +132,14 @@ module Akami
           # You need correctly configured gost engine in your system OpenSSL, requires OpenSSL >= 1.0.0
           # see https://github.com/openssl/openssl/blob/master/engines/ccgost/README.gost
           'http://www.w3.org/2001/04/xmldsig-more#gostr3411' => lambda {
-            OpenSSL::Engine.load
-            gost_engine = OpenSSL::Engine.by_id('gost')
-            gost_engine.set_default(0xFFFF)
-            gost_engine.digest('md_gost94')
+            if defined? JRUBY_VERSION
+              OpenSSL::Digest.new('GOST3411')
+            else
+              OpenSSL::Engine.load
+              gost_engine = OpenSSL::Engine.by_id('gost')
+              gost_engine.set_default(0xFFFF)
+              gost_engine.digest('md_gost94')
+            end
           },
       }
 
