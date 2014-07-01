@@ -1,4 +1,5 @@
 require 'nokogiri'
+require 'openssl'
 
 module Akami
   class WSSE
@@ -49,29 +50,47 @@ module Akami
         raise InvalidSignature, e.message
       end
 
+      # Returns a hash with currently initialized digesters.
+      #
+      # Will be empty after initialization, and will contain used algorithms after verification.
+      #
+      # May be used to insert additional digesters, not supported out of the box, for example:
+      #
+      #   digesters['http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'] = OpenSSL::Digest::SHA512.new
+
+      def digesters
+        @digesters
+      end
+
       private
 
       def verify
         document.xpath('//wse:Security/ds:Signature/ds:SignedInfo/ds:Reference', namespaces).each do |ref|
+          digest_algorithm = ref.at_xpath('//ds:DigestMethod', namespaces)['Algorithm']
           element_id = ref.attributes['URI'].value[1..-1] # strip leading '#'
           element = document.at_xpath(%(//*[@wsu:Id="#{element_id}"]), namespaces)
-          raise InvalidDigest, "Invalid Digest for #{element_id}" unless supplied_digest(element) == generate_digest(element)
+          unless supplied_digest(element) == generate_digest(element, digest_algorithm)
+            raise InvalidDigest, "Invalid Digest for #{element_id}"
+          end
         end
 
         data = canonicalize(signed_info)
         signature = Base64.decode64(signature_value)
+        signature_algorithm = document.at_xpath('//wse:Security/ds:Signature/ds:SignedInfo/ds:SignatureMethod', namespaces)['Algorithm']
+        signature_digester = digester_for_signature_method(signature_algorithm)
 
-        certificate.public_key.verify(OpenSSL::Digest::SHA1.new, signature, data) or raise InvalidSignedValue, "Could not verify the signature value"
+        certificate.public_key.verify(signature_digester, signature, data) or raise InvalidSignedValue, "Could not verify the signature value"
       end
 
       def signed_info
         document.at_xpath('//wse:Security/ds:Signature/ds:SignedInfo', namespaces)
       end
 
-      def generate_digest(element)
+      # Generate digest for a given +element+ (or its XPath) with a given +algorithm+
+      def generate_digest(element, algorithm)
         element = document.at_xpath(element, namespaces) if element.is_a? String
         xml = canonicalize(element)
-        digest(xml).strip
+        digest(xml, algorithm).strip
       end
 
       def supplied_digest(element)
@@ -88,9 +107,52 @@ module Akami
         document.at_xpath(%(//wse:Security/ds:Signature/ds:SignedInfo/ds:Reference[@URI="##{id}"]/ds:DigestValue), namespaces).text
       end
 
-      def digest(string)
-        Base64.encode64 OpenSSL::Digest::SHA1.digest(string)
+      # Calculate digest for string with given algorithm URL and Base64 encodes it.
+      def digest(string, algorithm)
+        Base64.encode64 digester(algorithm).digest(string)
       end
+
+      # Returns digester for calculating digest for signature verification
+      def digester_for_signature_method(algorithm_url)
+        signature_digest_mapping = {
+          'http://www.w3.org/2000/09/xmldsig#rsa-sha1' => 'http://www.w3.org/2000/09/xmldsig#sha1',
+          'http://www.w3.org/2001/04/xmldsig-more#gostr34102001-gostr3411' => 'http://www.w3.org/2001/04/xmldsig-more#gostr3411',
+        }
+        digest_url = signature_digest_mapping[algorithm_url] || algorithm_url
+        digester(digest_url)
+      end
+
+      # Constructors for known digest calculating objects
+      DIGESTERS = {
+          # SHA1
+          'http://www.w3.org/2000/09/xmldsig#sha1' => lambda { OpenSSL::Digest::SHA1.new },
+          # SHA 256
+          'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256' => lambda { OpenSSL::Digest::SHA256.new },
+          # GOST R 34.11-94
+          # You need correctly configured gost engine in your system OpenSSL, requires OpenSSL >= 1.0.0
+          # see https://github.com/openssl/openssl/blob/master/engines/ccgost/README.gost
+          'http://www.w3.org/2001/04/xmldsig-more#gostr3411' => lambda {
+            if defined? JRUBY_VERSION
+              OpenSSL::Digest.new('GOST3411')
+            else
+              OpenSSL::Engine.load
+              gost_engine = OpenSSL::Engine.by_id('gost')
+              gost_engine.set_default(0xFFFF)
+              gost_engine.digest('md_gost94')
+            end
+          },
+      }
+
+      # Returns instance of +OpenSSL::Digest+ class, initialized, reset, and ready to calculate new hashes.
+      def digester(url)
+        @digesters ||= {}
+        unless @digesters[url]
+          DIGESTERS[url] or raise InvalidDigest, "Digest algorithm not supported: #{url}"
+          @digesters[url] = DIGESTERS[url].call
+        end
+        @digesters[url].reset
+      end
+
     end
   end
 end
