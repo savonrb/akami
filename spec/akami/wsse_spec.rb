@@ -108,9 +108,16 @@ describe Akami do
     context "with credentials" do
       before { wsse.credentials "username", "password" }
 
-      it "contains a wsse:Security tag" do
-        namespace = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"
-        expect(wsse.to_xml).to include("<wsse:Security xmlns:wsse=\"#{namespace}\">")
+      context "wsse:Security tag" do
+        let(:security_tag) { wsse.to_xml[/<wsse:Security.*?>/] }
+
+        it "contains a xmlns:wsse attribute" do
+          expect(security_tag).to include("xmlns:wsse=\"#{Akami::WSSE::WSE_NAMESPACE}\"")
+        end
+
+        it "contains a xmlns:wsu attribute" do
+          expect(security_tag).to include("xmlns:wsu=\"#{Akami::WSSE::WSU_NAMESPACE}\"")
+        end
       end
 
       it "contains a wsu:Id attribute" do
