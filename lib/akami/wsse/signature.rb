@@ -14,7 +14,8 @@ module Akami
       # Without a document, the document cannot be signed.
       # Generate the document once, and then set document and recall #to_token
       def document
-        @document ? @document.to_s : nil
+        return nil if @document.nil?
+        @document.to_xml(save_with: Nokogiri::XML::Node::SaveOptions::AS_XML)
       end
 
       def document=(document)
