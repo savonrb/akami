@@ -29,8 +29,8 @@ describe Akami do
     )
   end
 
-  it "contains the namespace for Base64 Encoding type" do 
-    expect(Akami::WSSE::BASE64_URI).to eq( 
+  it "contains the namespace for Base64 Encoding type" do
+    expect(Akami::WSSE::BASE64_URI).to eq(
       "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary"
     )
   end
@@ -243,7 +243,7 @@ describe Akami do
       end
     end
 
-    context "whith credentials and timestamp" do
+    context "with credentials and timestamp" do
       before do
         wsse.credentials "username", "password"
         wsse.timestamp = true
@@ -261,6 +261,60 @@ describe Akami do
         expect(wsse.to_xml).to include("username", "password")
       end
     end
+
+    context 'with signature' do
+      let(:fixtures_path) {
+        File.join(Bundler.root, 'spec', 'fixtures', 'akami', 'wsse', 'signature')
+      }
+      let(:xml) { fixture('akami/wsse/sample.xml') }
+      let(:cert_path) { File.join(fixtures_path, 'cert.pem') }
+      let(:signature) {
+        Akami::WSSE::Signature.new(
+          Akami::WSSE::Certs.new(
+            cert_file:            cert_path,
+            private_key_file:     cert_path,
+            private_key_password: 'password'
+          )
+        )
+      }
+
+      before do
+        signature.document = xml
+        wsse.signature = signature
+      end
+
+      it 'contains SignedInfo node' do
+        expect(wsse.to_xml).to include('SignedInfo')
+      end
+      it 'contains SignatureValue node' do
+        expect(wsse.to_xml).to include('SignatureValue')
+      end
+      it 'contains KeyInfo node' do
+        expect(wsse.to_xml).to include('KeyInfo')
+      end
+
+      context 'with timestamp' do
+        before do
+          wsse.timestamp = true
+        end
+        it 'contains SignedInfo node' do
+          expect(wsse.to_xml).to include('SignedInfo')
+        end
+        it 'contains SignatureValue node' do
+          expect(wsse.to_xml).to include('SignatureValue')
+        end
+        it 'contains KeyInfo node' do
+          expect(wsse.to_xml).to include('KeyInfo')
+        end
+        it "contains a wsu:Created node" do
+          expect(wsse.to_xml).to include("<wsu:Created>")
+        end
+        it "contains a wsu:Expires node" do
+          expect(wsse.to_xml).to include("<wsu:Expires>")
+        end
+      end
+    end
+
   end
 
 end
