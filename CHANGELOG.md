@@ -1,4 +1,6 @@
-## master
+## 1.3.0 (2015-03-31)
+
+* Formally drop support for ruby 1.8.7
 
 ## 1.2.1 (2014-01-31)
 * Fix: [#2](https://github.com/savonrb/akami/pull/2) Fixes related to WS-Security,
