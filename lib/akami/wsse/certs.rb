@@ -14,9 +14,9 @@ module Akami
       # Returns an <tt>OpenSSL::X509::Certificate</tt> for the +cert_string+ or +cert_file+.
       def cert
         @cert ||=
-          if cert_string.present?
+          if !cert_string.nil?
             OpenSSL::X509::Certificate.new(cert_string)
-          elsif cert_file.present?
+          elsif !cert_file.nil?
             OpenSSL::X509::Certificate.new(File.read(cert_file))
           end
       end
@@ -24,9 +24,9 @@ module Akami
       # Returns an <tt>OpenSSL::PKey::RSA</tt> for the +private_key_string+ or +private_key_file+.
       def private_key
         @private_key ||=
-          if private_key_string.present?
+          if !private_key_string.nil?
             OpenSSL::PKey::RSA.new(private_key_string, private_key_password)
-          elsif private_key_file.present?
+          elsif !private_key_file.nil?
             OpenSSL::PKey::RSA.new(File.read(private_key_file), private_key_password)
           end
       end
