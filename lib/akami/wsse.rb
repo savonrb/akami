@@ -108,7 +108,7 @@ module Akami
       end
     end
 
-  private
+    private
 
     # Returns a Hash containing wsse:UsernameToken details.
     def wsse_username_token
@@ -124,6 +124,8 @@ module Akami
       else
         token = security_hash :wsse, "UsernameToken",
           "wsse:Username" => username,
+          "wsse:Nonce" => Base64.encode64(nonce).chomp,
+          "wsu:Created" => timestamp,
           "wsse:Password" => password,
           :attributes! => { "wsse:Password" => { "Type" => PASSWORD_TEXT_URI } }
       end
