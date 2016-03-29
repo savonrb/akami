@@ -91,23 +91,29 @@ module Akami
 
     # Returns the XML for a WSSE header.
     def to_xml
-      if signature? and signature.have_document?
-        Gyoku.xml wsse_signature.merge!(hash)
-      elsif username_token? && timestamp?
-        Gyoku.xml wsse_username_token.merge!(wsu_timestamp) {
-          |key, v1, v2| v1.merge!(v2) {
-            |key, v1, v2| v1.merge!(v2)
-          }
-        }
-      elsif username_token?
-        Gyoku.xml wsse_username_token.merge!(hash)
-      elsif timestamp?
-        Gyoku.xml wsu_timestamp.merge!(hash)
-      else
-        ""
-      end
-    end
+      xml = hash
 
+      if signature? and signature.have_document?
+        xml.merge!(wsse_signature)
+      elsif username_token?
+        xml.merge!(wsse_username_token)
+      end
+
+      if timestamp?
+        xml.merge!(wsu_timestamp) do |key, v1, v2|
+          v1.merge!(v2) do |key, v1, v2|
+            if v1.is_a?(Hash) && v2.is_a?(Hash)
+              v1.merge!(v2)
+            end
+          end
+        end
+        unless xml['wsse:Security'][:order!].nil?
+          xml['wsse:Security'][:order!] << 'wsu:Timestamp'
+        end
+      end
+
+      Gyoku.xml xml
+    end
   private
 
     # Returns a Hash containing wsse:UsernameToken details.
