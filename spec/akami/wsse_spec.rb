@@ -214,6 +214,10 @@ describe Akami do
           expect(wsse.to_xml).to include("<wsu:Expires>#{(created_at + 60).utc.xmlschema}</wsu:Expires>")
         end
       end
+
+      it "orders a wsu:Timestamp first" do
+        wsse.to_xml.should match(/<wsse:Security[^>]*>\s*<wsu:Timestamp/)
+      end
     end
 
     context "with #created_at" do
@@ -259,6 +263,10 @@ describe Akami do
 
       it "contains the username and password" do
         expect(wsse.to_xml).to include("username", "password")
+      end
+
+      it "orders a wsu:Timestamp first" do
+        wsse.to_xml.should match(/<wsse:Security[^>]*>\s*<wsu:Timestamp/)
       end
     end
   end
