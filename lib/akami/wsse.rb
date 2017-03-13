@@ -91,24 +91,23 @@ module Akami
 
     # Returns the XML for a WSSE header.
     def to_xml
-      if signature? and signature.have_document?
-        Gyoku.xml wsse_signature.merge!(hash)
-      elsif username_token? && timestamp?
-        Gyoku.xml wsse_username_token.merge!(wsu_timestamp) {
-          |key, v1, v2| v1.merge!(v2) {
-            |key, v1, v2| v1.merge!(v2)
-          }
-        }
-      elsif username_token?
-        Gyoku.xml wsse_username_token.merge!(hash)
-      elsif timestamp?
-        Gyoku.xml wsu_timestamp.merge!(hash)
-      else
-        ""
-      end
+      h = wsse_signature if signature? && signature.have_document?
+      h = merge_hashes_with_keys(h, wsse_username_token) if username_token?
+      h = merge_hashes_with_keys(h, wsu_timestamp) if timestamp?
+
+      return '' unless h
+      Gyoku.xml h
     end
 
   private
+
+    def merge_hashes_with_keys(hash_one, hash_two)
+      return hash_two unless hash_one
+      keys = hash_one["wsse:Security"][:order!] | hash_two["wsse:Security"][:order!]
+      hash_one.deep_merge! hash_two
+      hash_one["wsse:Security"][:order!] = keys
+      hash_one
+    end
 
     # Returns a Hash containing wsse:UsernameToken details.
     def wsse_username_token
@@ -136,7 +135,7 @@ module Akami
       # First key/value is tag/hash
       tag, hash = signature_hash.shift
 
-      security_hash nil, tag, hash, signature_hash
+      security_hash nil, tag, hash, signature_hash, true
     end
 
     # Returns a Hash containing wsu:Timestamp details.
@@ -148,21 +147,20 @@ module Akami
 
     # Returns a Hash containing wsse/wsu Security details for a given
     # +namespace+, +tag+ and +hash+.
-    def security_hash(namespace, tag, hash, extra_info = {})
+    def security_hash(namespace, tag, hash, extra_info = {}, signature_request=false)
       key = [namespace, tag].compact.join(":")
 
       sec_hash = {
         "wsse:Security" => {
-          key => hash
+          key => hash,
+          :order! => [key]
         },
         :attributes! => { "wsse:Security" => { "xmlns:wsse" => WSE_NAMESPACE } }
       }
 
-      unless extra_info.empty?
-        sec_hash["wsse:Security"].merge!(extra_info)
-      end
+      sec_hash["wsse:Security"].merge!(extra_info) unless extra_info.empty?
 
-      if signature?
+      if signature_request
         sec_hash[:attributes!].merge!("soapenv:mustUnderstand" => "1")
       else
         sec_hash["wsse:Security"].merge!(:attributes! => { key => { "wsu:Id" => "#{tag}-#{count}", "xmlns:wsu" => WSU_NAMESPACE } })
@@ -202,6 +200,5 @@ module Akami
     def hash
       @hash ||= Hash.new { |h, k| h[k] = Hash.new(&h.default_proc) }
     end
-
   end
 end
