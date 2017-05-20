@@ -1,5 +1,13 @@
 require 'spec_helper'
 
+RSpec.configure do |c|
+  OpenSSL::Engine.load
+  gost_engine = OpenSSL::Engine.engines.select do |engine|
+    engine.id == "gost"
+  end
+  c.filter_run_excluding :omit_gost => gost_engine.empty?
+end
+
 describe Akami::WSSE::VerifySignature do
 
   it 'should validate correctly signed XML messages' do
@@ -40,7 +48,7 @@ describe Akami::WSSE::VerifySignature do
 
   # There is no testing for messages signed with GOST as it requires patched Ruby
   # But we can test GOST digest calculation
-  it 'should validate correctly signed XML messages with RSA-SHA1 signature and GOST R 34.11-94 digests' do
+  it 'should validate correctly signed XML messages with RSA-SHA1 signature and GOST R 34.11-94 digests', :omit_gost => true do
     xml = fixture('akami/wsse/verify_signature/valid_sha1_gost.xml')
     validator = described_class.new(xml)
     expect(validator.verify!).to equal(true)
