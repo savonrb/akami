@@ -9,5 +9,9 @@ rvm:
   - 2.3.0
   - jruby
   - rbx-2
+matrix:
+  allow_failures:
+    - rvm: rbx-2
+  fast_finish: true
 notifications:
   irc: "irc.freenode.org#savon"
