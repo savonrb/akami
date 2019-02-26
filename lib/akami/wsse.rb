@@ -1,6 +1,5 @@
 require "base64"
 require "digest/sha1"
-require "akami/core_ext/hash"
 require "akami/xpath_helper"
 require "akami/c14n_helper"
 require "time"
