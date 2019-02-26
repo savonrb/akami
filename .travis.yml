@@ -4,9 +4,12 @@ script: "bundle exec rake"
 sudo: false
 rvm:
   - 2.0.0
-  - 2.1.8
-  - 2.2.4
-  - 2.3.0
+  - 2.1.10
+  - 2.2.10
+  - 2.3.8
+  - 2.4.5
+  - 2.5.3
+  - 2.6.1
   - jruby
   - rbx-2
 matrix:
