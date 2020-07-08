@@ -12,7 +12,6 @@ Gem::Specification.new do |s|
   s.description = "Building Web Service Security"
   s.required_ruby_version = '>= 1.9.2'
 
-  s.rubyforge_project = s.name
   s.license = "MIT"
 
   s.add_dependency "gyoku", ">= 0.4.0"
