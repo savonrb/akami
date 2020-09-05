@@ -1,7 +1,6 @@
 # https://github.com/travis-ci/travis-ci/wiki/.travis.yml-options
 language: "ruby"
 script: "bundle exec rake"
-sudo: false
 rvm:
   - 2.0.0
   - 2.1.10
@@ -11,10 +10,7 @@ rvm:
   - 2.5.3
   - 2.6.1
   - jruby
-  - rbx-2
 matrix:
-  allow_failures:
-    - rvm: rbx-2
   fast_finish: true
 notifications:
   irc: "irc.freenode.org#savon"
