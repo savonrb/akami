@@ -1,3 +1,4 @@
+require "akami/hash_helper"
 require "akami/wsse/certs"
 
 module Akami
@@ -74,7 +75,7 @@ module Akami
           :attributes! => { "Signature" => { "xmlns" => SignatureNamespace } },
         }
 
-        token.deep_merge!(binary_security_token) if certs.cert
+        Akami::HashHelper.deep_merge!(token, binary_security_token) if certs.cert
 
         token.merge! :order! => []
         [ "wsse:BinarySecurityToken", "Signature" ].each do |key|
