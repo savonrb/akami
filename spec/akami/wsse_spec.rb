@@ -261,6 +261,105 @@ describe Akami do
         expect(wsse.to_xml).to include("username", "password")
       end
     end
+
+    context "whith signature and timestamp on it" do
+      let(:fixtures_path) do
+        File.join(Bundler.root, 'spec', 'fixtures', 'akami', 'wsse', 'signature' )
+      end
+      let(:cert_file_path)   { File.join(fixtures_path, 'cert.pem') }
+      let(:private_key_path) { File.join(fixtures_path, 'private_key') }
+
+      before do
+        wsse.signature = Akami::WSSE::Signature.new(
+            Akami::WSSE::Certs.new(
+                cert_file: cert_file_path,
+                private_key_file: private_key_path),
+            timestamp: true)
+        # some stubs because we have no document body
+        wsse.signature.stub(:have_document?) { true }
+        wsse.signature.stub(:body_digest) { "stubbedBodyDigest" }
+        wsse.signature.stub(:timestamp_digest) { "stubbedTimestampDigest" }
+      end
+
+      it "contains SignedInfo node" do
+        expect(wsse.to_xml).to include('SignedInfo')
+      end
+
+      it "contains SignatureValue node" do
+        expect(wsse.to_xml).to include('SignatureValue')
+      end
+
+      it "contains KeyInfo node" do
+        expect(wsse.to_xml).to include('KeyInfo')
+      end
+
+      it "contains a wsu:Created node" do
+        expect(wsse.to_xml).to include("<wsu:Created>")
+      end
+
+      it "contains a wsu:Expires node" do
+        expect(wsse.to_xml).to include("<wsu:Expires>")
+      end
+
+      it "contains an id on Timestamp" do
+        id = wsse.signature.timestamp_id
+        expect(wsse.to_xml).to include(%Q|<wsu:Timestamp wsu:Id="#{id}"|)
+      end
+
+      it "contains two references" do
+        body_id = wsse.signature.body_id
+        expect(wsse.to_xml).to include(%Q|<Reference URI="##{body_id}"|)
+        timestamp_id = wsse.signature.timestamp_id
+        expect(wsse.to_xml).to include(%Q|<Reference URI="##{timestamp_id}"|)
+      end
+
+      context "with #created_at" do
+        before do
+          wsse.signature = Akami::WSSE::Signature.new(
+              Akami::WSSE::Certs.new(
+                  cert_file: cert_file_path,
+                  private_key_file: private_key_path),
+              timestamp: true,
+              created_at: Time.now + 86400)
+          wsse.signature.stub(:have_document?) { true }
+          wsse.signature.stub(:body_digest) { "stubbedBodyDigest" }
+          wsse.signature.stub(:timestamp_digest) { "stubbedTimestampDigest" }
+        end
+
+        it "contains a wsu:Created node with the given time" do
+          expect(wsse.to_xml).to include("<wsu:Created>#{wsse.signature.created_at.utc.xmlschema}</wsu:Created>")
+        end
+
+        it "contains a wsu:Expires node set to #created_at + 60 seconds" do
+          expect(wsse.to_xml).to include("<wsu:Expires>#{(wsse.signature.created_at + 60).utc.xmlschema}</wsu:Expires>")
+        end
+      end
+
+      context "with #expires_at" do
+        before do
+          wsse.signature = Akami::WSSE::Signature.new(
+              Akami::WSSE::Certs.new(
+                  cert_file: cert_file_path,
+                  private_key_file: private_key_path),
+              {timestamp: true,
+              expires_at: (Time.now + 86400)})
+          wsse.signature.stub(:have_document?) { true }
+          wsse.signature.stub(:body_digest) { "stubbedBodyDigest" }
+          wsse.signature.stub(:timestamp_digest) { "stubbedTimestampDigest" }
+        end
+
+        it "contains a wsu:Created node defaulting to Time.now" do
+          created_at = Time.now
+          Timecop.freeze created_at do
+            expect(wsse.to_xml).to include("<wsu:Created>#{created_at.utc.xmlschema}</wsu:Created>")
+          end
+        end
+
+        it "contains a wsu:Expires node set to the given time" do
+          expect(wsse.to_xml).to include("<wsu:Expires>#{wsse.signature.expires_at.utc.xmlschema}</wsu:Expires>")
+        end
+      end
+    end
   end
 
 end

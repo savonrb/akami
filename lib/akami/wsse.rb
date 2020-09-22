@@ -135,7 +135,15 @@ module Akami
       # First key/value is tag/hash
       tag, hash = signature_hash.shift
 
-      security_hash nil, tag, hash, signature_hash
+      sig = security_hash nil, tag, hash, signature_hash
+      if signature.timestamp
+        wsu_timestamp_hash = signature.wsu_timestamp_hash
+        sig["wsse:Security"]["wsu:Timestamp"] = wsu_timestamp_hash["wsu:Timestamp"] # attributes should be merged and not overridden
+        sig["wsse:Security"][:attributes!].merge!(wsu_timestamp_hash[:attributes!])
+        sig["wsse:Security"][:order!] << "wsu:Timestamp"
+      end
+
+      sig
     end
 
     # Returns a Hash containing wsu:Timestamp details.
