@@ -93,7 +93,7 @@ module Akami
       if signature? and signature.have_document?
         Gyoku.xml wsse_signature.merge!(hash)
       elsif username_token? && timestamp?
-        Gyoku.xml wsse_username_token.merge!(wsu_timestamp) {
+        Gyoku.xml wsu_timestamp.merge!(wsse_username_token) {
           |key, v1, v2| v1.merge!(v2) {
             |key, v1, v2| v1.merge!(v2)
           }
