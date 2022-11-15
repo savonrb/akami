@@ -12,7 +12,6 @@ Gem::Specification.new do |s|
   s.description = "Building Web Service Security"
   s.required_ruby_version = '>= 1.9.2'
 
-  s.rubyforge_project = s.name
   s.license = "MIT"
 
   s.add_dependency "gyoku", ">= 0.4.0"
@@ -22,8 +21,6 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rspec",   "~> 2.14"
   s.add_development_dependency "timecop", "~> 0.5"
 
-  s.files         = `git ls-files`.split("\n")
-  s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
-  s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
+  s.files = Dir["lib/**/*"] + %w[CHANGELOG.md LICENSE README.md]
   s.require_paths = ["lib"]
 end

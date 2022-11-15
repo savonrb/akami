@@ -29,6 +29,13 @@ describe Akami::WSSE::Signature do
       expect(signature.document).not_to include("  ")
     end
 
+    it 'should deep_merge with binary_security_token' do
+      signature.document = xml
+      expect(signature.to_token[:attributes!]['wsse:BinarySecurityToken']['xmlns:wsu']).
+        to equal(Akami::WSSE::WSU_NAMESPACE)
+      expect(signature.to_token[:attributes!]['Signature']['xmlns']).
+        to equal(Akami::WSSE::Signature::SignatureNamespace)
+    end
   end
 
 end
