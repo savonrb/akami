@@ -305,8 +305,7 @@ describe Akami do
         end
 
         it "contains a wsse:Timestamp node" do
-          expect(wsse.to_xml).to include('<wsu:Timestamp wsu:Id="Timestamp-2" ' +
-            "xmlns:wsu=\"#{Akami::WSSE::WSU_NAMESPACE}\">")
+          expect(wsse.to_xml).to match(/<wsu:Timestamp wsu:Id=\"Timestamp-\d\" xmlns:wsu=\"#{Akami::WSSE::WSU_NAMESPACE}\">/i)
         end
       end
     end

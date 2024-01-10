@@ -91,8 +91,8 @@ module Akami
     # Returns the XML for a WSSE header.
     def to_xml
       h = wsse_signature if signature? && signature.have_document?
-      h = merge_hashes_with_keys(h, wsse_username_token) if username_token?
       h = merge_hashes_with_keys(h, wsu_timestamp) if timestamp?
+      h = merge_hashes_with_keys(h, wsse_username_token) if username_token?
 
       return '' unless h
       Gyoku.xml h
