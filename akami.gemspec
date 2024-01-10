@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake",    "~> 13.0"
   s.add_development_dependency "rspec",   "~> 3.12"
   s.add_development_dependency "timecop", "~> 0.5"
+  s.add_development_dependency "debug"
 
   s.metadata = { "rubygems_mfa_required" => "true" }
 

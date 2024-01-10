@@ -260,6 +260,10 @@ describe Akami do
       it "contains the username and password" do
         expect(wsse.to_xml).to include("username", "password")
       end
+
+      it "puts timestamp before username" do
+        expect(wsse.to_xml).to match(/<wsu:Timestamp.*<wsse:UsernameToken/i)
+      end
     end
   end
 
