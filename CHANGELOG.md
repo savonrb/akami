@@ -1,3 +1,9 @@
+## 1.3.2 (2024-01-09)
+
+* Stop patching Hash [#35](https://github.com/savonrb/akami/pull/35)
+* Drop support for ruby 2.7 and below
+* GOST engine for openssl is no longer officially supported
+
 ## 1.3.1 (2015-05-4)
 
 * Fix regression caused by pull request #20. Object#present? is not available outside of Rails.
