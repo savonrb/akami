@@ -1,7 +1,9 @@
-Akami [![Build Status](http://travis-ci.org/savonrb/akami.svg)](http://travis-ci.org/savonrb/akami)
+Akami
 =====
 
 Building Web Service Security.
+
+[![Ruby](https://github.com/savonrb/akami/actions/workflows/ci.yml/badge.svg)](https://github.com/savonrb/akami/actions/workflows/ci.yml)
 
 The XML namespaces used by this gem begin with http://docs.oasis-open.org/wss/2004/01/. That URL has PDF documentation of "Web Services Security UsernameToken Profile 1.0" and "Web Services Security: SOAP Message Security 1.0 (WS-Security 2004)".
 

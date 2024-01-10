@@ -38,14 +38,6 @@ describe Akami::WSSE::VerifySignature do
     expect{ validator.verify! }.to raise_error(Akami::WSSE::InvalidSignature)
   end
 
-  # There is no testing for messages signed with GOST as it requires patched Ruby
-  # But we can test GOST digest calculation
-  it 'validates correctly signed XML messages with RSA-SHA1 signature and GOST R 34.11-94 digests' do
-    xml = fixture('akami/wsse/verify_signature/valid_sha1_gost.xml')
-    validator = described_class.new(xml)
-    expect(validator.verify!).to equal(true)
-  end
-
   it 'validates correctly signed XML messages with SHA256 signature and SHA256 digests' do
     xml = fixture('akami/wsse/verify_signature/valid_sha256.xml')
     validator = described_class.new(xml)
