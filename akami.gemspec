@@ -17,9 +17,11 @@ Gem::Specification.new do |s|
   s.add_dependency "gyoku", ">= 0.4.0"
   s.add_dependency "nokogiri"
 
-  s.add_development_dependency "rake",    "~> 10.0"
-  s.add_development_dependency "rspec",   "~> 2.14"
+  s.add_development_dependency "rake",    "~> 13.0"
+  s.add_development_dependency "rspec",   "~> 3.12"
   s.add_development_dependency "timecop", "~> 0.5"
+
+  s.metadata = { "rubygems_mfa_required" => "true" }
 
   s.files = Dir["lib/**/*"] + %w[CHANGELOG.md LICENSE README.md]
   s.require_paths = ["lib"]

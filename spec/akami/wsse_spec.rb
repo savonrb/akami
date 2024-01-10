@@ -173,7 +173,7 @@ describe Akami do
         expect(wsse.to_xml).to include(Akami::WSSE::PASSWORD_DIGEST_URI)
       end
 
-      it "should reset the nonce every time" do
+      it "resets the nonce every time" do
         created_at = Time.now
         Timecop.freeze created_at do
           nonce_regexp = /<wsse:Nonce.*>([^<]+)<\/wsse:Nonce>/
