@@ -10,12 +10,13 @@ Gem::Specification.new do |s|
   s.homepage    = "https://github.com/savonrb/#{s.name}"
   s.summary     = "Web Service Security"
   s.description = "Building Web Service Security"
-  s.required_ruby_version = '>= 2.7.0'
+  s.required_ruby_version = '>= 3.0.0'
 
   s.license = "MIT"
 
   s.add_dependency "gyoku", ">= 0.4.0"
   s.add_dependency "nokogiri"
+  s.add_dependency "base64"
 
   s.add_development_dependency "rake",    "~> 13.0"
   s.add_development_dependency "rspec",   "~> 3.12"
