@@ -1,3 +1,7 @@
+## 1.3.3 (2024-02-13)
+
+* Explicitly declare base64 dep in gemfile (useful for testing against ruby-head).
+
 ## 1.3.2 (2024-01-09)
 
 * Stop patching Hash [#35](https://github.com/savonrb/akami/pull/35)
