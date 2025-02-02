@@ -24,6 +24,7 @@ module Akami
           wse: Akami::WSSE::WSE_NAMESPACE,
           ds:  'http://www.w3.org/2000/09/xmldsig#',
           wsu: Akami::WSSE::WSU_NAMESPACE,
+          ec:  Akami::WSSE::Signature::ExclusiveXMLCanonicalizationAlgorithm,
         }
       end
 
@@ -67,14 +68,19 @@ module Akami
       def verify
         document.xpath('//wse:Security/ds:Signature/ds:SignedInfo/ds:Reference', namespaces).each do |ref|
           digest_algorithm = ref.at_xpath('//ds:DigestMethod', namespaces)['Algorithm']
+
+          transform_inclusive_ns = inclusive_namespaces(ref, './/ds:Transforms/ds:Transform/ec:InclusiveNamespaces')
+
           element_id = ref.attributes['URI'].value[1..-1] # strip leading '#'
           element = document.at_xpath(%(//*[@wsu:Id="#{element_id}"]), namespaces)
-          unless supplied_digest(element) == generate_digest(element, digest_algorithm)
+          unless supplied_digest(element) == generate_digest(element, digest_algorithm, transform_inclusive_ns)
             raise InvalidDigest, "Invalid Digest for #{element_id}"
           end
         end
 
-        data = canonicalize(signed_info)
+        canonicalization_inclusive_ns = inclusive_namespaces(document, '//ds:CanonicalizationMethod/ec:InclusiveNamespaces')
+
+        data = canonicalize(signed_info, canonicalization_inclusive_ns)
         signature = Base64.decode64(signature_value)
         signature_algorithm = document.at_xpath('//wse:Security/ds:Signature/ds:SignedInfo/ds:SignatureMethod', namespaces)['Algorithm']
         signature_digester = digester_for_signature_method(signature_algorithm)
@@ -82,14 +88,19 @@ module Akami
         certificate.public_key.verify(signature_digester, signature, data) or raise InvalidSignedValue, "Could not verify the signature value"
       end
 
+      def inclusive_namespaces(ref, xpath)
+        inclusive_namespaces_element = ref.at_xpath(xpath, namespaces)
+        inclusive_namespaces_element['PrefixList'].split if inclusive_namespaces_element
+      end
+
       def signed_info
         document.at_xpath('//wse:Security/ds:Signature/ds:SignedInfo', namespaces)
       end
 
       # Generate digest for a given +element+ (or its XPath) with a given +algorithm+
-      def generate_digest(element, algorithm)
+      def generate_digest(element, algorithm, inclusive_namespaces = nil)
         element = document.at_xpath(element, namespaces) if element.is_a? String
-        xml = canonicalize(element)
+        xml = canonicalize(element, inclusive_namespaces)
         digest(xml, algorithm).strip
       end
 
