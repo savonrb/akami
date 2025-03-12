@@ -98,7 +98,7 @@ module Akami
       Gyoku.xml h
     end
 
-  private
+    private
 
     def merge_hashes_with_keys(hash_one, hash_two)
       return hash_two unless hash_one
@@ -122,6 +122,8 @@ module Akami
       else
         token = security_hash :wsse, "UsernameToken",
           "wsse:Username" => username,
+          "wsse:Nonce" => Base64.encode64(nonce).chomp,
+          "wsu:Created" => timestamp,
           "wsse:Password" => password,
           :attributes! => { "wsse:Password" => { "Type" => PASSWORD_TEXT_URI } }
       end
