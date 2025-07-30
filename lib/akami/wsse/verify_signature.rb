@@ -22,6 +22,7 @@ module Akami
       def namespaces
         @namespaces ||= {
           wse: Akami::WSSE::WSE_NAMESPACE,
+          wsse: 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd',
           ds:  'http://www.w3.org/2000/09/xmldsig#',
           wsu: Akami::WSSE::WSU_NAMESPACE,
           ec:  Akami::WSSE::Signature::ExclusiveXMLCanonicalizationAlgorithm,
@@ -33,7 +34,12 @@ module Akami
 
       # Returns signer's certificate, bundled in signed document
       def certificate
-        certificate_value = document.at_xpath('//wse:Security/wse:BinarySecurityToken', namespaces).text.strip
+        signature_certificate_id = document.at_xpath(
+          '//wse:Security/ds:Signature/ds:KeyInfo/wsse:SecurityTokenReference/wsse:Reference',
+          namespaces
+        )['URI'][1..-1] # strip leading '#'
+
+        certificate_value = document.at_xpath("//wse:Security/wse:BinarySecurityToken[@wsu:Id=\"#{signature_certificate_id}\"]", namespaces).text.strip
         OpenSSL::X509::Certificate.new Base64.decode64(certificate_value)
       end
 
@@ -67,6 +73,8 @@ module Akami
 
       def verify
         document.xpath('//wse:Security/ds:Signature/ds:SignedInfo/ds:Reference', namespaces).each do |ref|
+          next unless ref.attributes['URI'].value.start_with?('#')
+
           digest_algorithm = ref.at_xpath('//ds:DigestMethod', namespaces)['Algorithm']
 
           transform_inclusive_ns = inclusive_namespaces(ref, './/ds:Transforms/ds:Transform/ec:InclusiveNamespaces')
@@ -139,6 +147,7 @@ module Akami
           'http://www.w3.org/2000/09/xmldsig#sha1' => lambda { OpenSSL::Digest::SHA1.new },
           # SHA 256
           'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256' => lambda { OpenSSL::Digest::SHA256.new },
+          'http://www.w3.org/2001/04/xmlenc#sha256' => lambda { OpenSSL::Digest::SHA256.new },
           # GOST R 34.11-94
           # You need correctly configured gost engine in your system OpenSSL, requires OpenSSL >= 1.0.0
           # see https://github.com/openssl/openssl/blob/master/engines/ccgost/README.gost
