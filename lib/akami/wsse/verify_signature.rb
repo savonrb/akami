@@ -22,7 +22,7 @@ module Akami
       def namespaces
         @namespaces ||= {
           wse: Akami::WSSE::WSE_NAMESPACE,
-          wsse: 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd',
+          wsse: Akami::WSSE::WSE_NAMESPACE,
           ds:  'http://www.w3.org/2000/09/xmldsig#',
           wsu: Akami::WSSE::WSU_NAMESPACE,
           ec:  Akami::WSSE::Signature::ExclusiveXMLCanonicalizationAlgorithm,
@@ -34,13 +34,18 @@ module Akami
 
       # Returns signer's certificate, bundled in signed document
       def certificate
-        signature_certificate_id = document.at_xpath(
-          '//wse:Security/ds:Signature/ds:KeyInfo/wsse:SecurityTokenReference/wsse:Reference',
-          namespaces
-        )['URI'][1..-1] # strip leading '#'
+        binary_security_tokens = document.xpath('//wse:Security/wse:BinarySecurityToken', namespaces)
+        if binary_security_tokens.size > 1
+          signature_certificate_id = document.at_xpath(
+            '//wse:Security/ds:Signature/ds:KeyInfo/wsse:SecurityTokenReference/wsse:Reference',
+            namespaces
+          )['URI'][1..-1] # strip leading '#'
+          certificate_value = document.at_xpath("//wse:Security/wse:BinarySecurityToken[@wsu:Id=\"#{signature_certificate_id}\"]", namespaces)
+        else
+          certificate_value = binary_security_tokens.first
+        end
 
-        certificate_value = document.at_xpath("//wse:Security/wse:BinarySecurityToken[@wsu:Id=\"#{signature_certificate_id}\"]", namespaces).text.strip
-        OpenSSL::X509::Certificate.new Base64.decode64(certificate_value)
+        OpenSSL::X509::Certificate.new Base64.decode64(certificate_value.text.strip)
       end
 
       # Validates document signature, returns +true+ on success, +false+ otherwise.
