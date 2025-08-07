@@ -11,11 +11,17 @@ module Akami
 
       class InvalidDigest < RuntimeError; end
       class InvalidSignedValue < RuntimeError; end
+      class MissingDecryptedAttachment < RuntimeError; end
 
       attr_reader :document
 
-      def initialize(xml)
+      # @param xml [String] The XML document to verify
+      # @param decrypted_attachments [Hash] A hash of decrypted attachments: { 'id' => 'decrypted_string' }
+      # For example: the decrypted_attachments of a gzipped xml is the gzipped base64 string, the result of the decryption
+      # { 'phase4-att-1f34-4d68a..' => 'kZ\xB4\xCD}\xCB..' }
+      def initialize(xml, decrypted_attachments: {})
         @document = Nokogiri::XML(xml.to_s, &:noblanks)
+        @decrypted_attachments = decrypted_attachments
       end
 
       # Returns XML namespaces that are used internally for document querying.
@@ -51,14 +57,14 @@ module Akami
       # Validates document signature, returns +true+ on success, +false+ otherwise.
       def valid?
         verify
-      rescue InvalidDigest, InvalidSignedValue
+      rescue InvalidDigest, InvalidSignedValue, MissingDecryptedAttachment
         return false
       end
 
       # Validates document signature and digests and raises if anything mismatches.
       def verify!
         verify
-      rescue InvalidDigest, InvalidSignedValue => e
+      rescue InvalidDigest, InvalidSignedValue, MissingDecryptedAttachment => e
         raise InvalidSignature, e.message
       end
 
@@ -78,15 +84,23 @@ module Akami
 
       def verify
         document.xpath('//wse:Security/ds:Signature/ds:SignedInfo/ds:Reference', namespaces).each do |ref|
-          next unless ref.attributes['URI'].value.start_with?('#')
-
           digest_algorithm = ref.at_xpath('//ds:DigestMethod', namespaces)['Algorithm']
 
           transform_inclusive_ns = inclusive_namespaces(ref, './/ds:Transforms/ds:Transform/ec:InclusiveNamespaces')
 
-          element_id = ref.attributes['URI'].value[1..-1] # strip leading '#'
-          element = document.at_xpath(%(//*[@wsu:Id="#{element_id}"]), namespaces)
-          unless supplied_digest(element) == generate_digest(element, digest_algorithm, transform_inclusive_ns)
+          ref_uri = ref.attributes['URI'].value
+          if ref_uri.start_with?("#")
+            element_id = ref_uri.sub(/^#/, '')
+            element = document.at_xpath(%(//*[@wsu:Id="#{element_id}"]), namespaces)
+            generated_digest = generate_digest(element, digest_algorithm, transform_inclusive_ns)
+          else
+            element_id = ref_uri.sub(/^cid:/, '')
+            element = @decrypted_attachments[element_id]
+            raise MissingDecryptedAttachment, "Missing decrypted attachment for #{element_id}" if element.nil?
+            generated_digest = digest(element, digest_algorithm).strip
+          end
+
+          unless supplied_digest(ref) == generated_digest
             raise InvalidDigest, "Invalid Digest for #{element_id}"
           end
         end
@@ -118,17 +132,12 @@ module Akami
       end
 
       def supplied_digest(element)
-        element = document.at_xpath(element, namespaces) if element.is_a? String
-        find_digest_value element.attributes['Id'].value
+        element.at_xpath('.//ds:DigestValue', namespaces).text
       end
 
       def signature_value
         element = document.at_xpath('//wse:Security/ds:Signature/ds:SignatureValue', namespaces)
         element ? element.text : ""
-      end
-
-      def find_digest_value(id)
-        document.at_xpath(%(//wse:Security/ds:Signature/ds:SignedInfo/ds:Reference[@URI="##{id}"]/ds:DigestValue), namespaces).text
       end
 
       # Calculate digest for string with given algorithm URL and Base64 encodes it.
