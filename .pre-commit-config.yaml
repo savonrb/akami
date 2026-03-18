@@ -1,0 +1,39 @@
+repos:
+  - repo: local
+    hooks:
+      - id: do_not_commit
+        name: Break on DO NOT COMMIT comment
+        language: pygrep
+        entry: (?i)(NOT.{,3}COMMIT)
+        exclude: (?x)(.pre-commit-config.yaml)$
+      - id: rubocop
+        name: Rubocop
+        language: system
+        entry: bundle exec rubocop
+        require_serial: true # for proper cache behavior
+        files: (?x)(
+          \.(rb|rake)$|Gemfile$|Rakefile|.irbrc$)
+        args:
+          - --autocorrect
+          - --color
+          - --server
+          - --config=.rubocop.yml
+      - id: encrypted_ssh_keys
+        name: Encrypted SSH keys
+        language: system
+        entry: .pre-commit/check_ssh_keys_passphrase.sh
+        pass_filenames: false
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: trailing-whitespace
+
+  - repo: https://github.com/tdeo/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: end-of-file-fixer
+
+  - repo: https://github.com/pennylane-hq/pre-commit-hooks
+    rev: d8b38e22631ed3597b2c8277f64cbd60afc1515a
+    hooks:
+      - id: actionlint

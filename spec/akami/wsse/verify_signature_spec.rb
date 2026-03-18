@@ -8,6 +8,12 @@ describe Akami::WSSE::VerifySignature do
     expect(validator.verify!).to eq(true)
   end
 
+  it 'validates correctly signed XML messages with multiple binary security token' do
+    xml = fixture('akami/wsse/verify_signature/valid_multiple_binary_security_token.xml')
+    validator = described_class.new(xml)
+    expect(validator.verify!).to eq(true)
+  end
+
   it 'validates correctly signed XML messages with differently named namespaces' do
     xml = fixture('akami/wsse/verify_signature/valid_namespaces.xml')
     validator = described_class.new(xml)
