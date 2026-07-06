@@ -1,0 +1,9 @@
+# The WS-Security algorithm/type URIs are public constants named in CamelCase
+# since akami 1.1.0 (2012). They are part of Akami::WSSE::Signature's public
+# surface and are referenced elsewhere as e.g.
+# Akami::WSSE::Signature::ExclusiveXMLCanonicalizationAlgorithm. Renaming them to
+# SCREAMING_SNAKE_CASE would break any caller that references them, so the naming
+# cop is disabled for this one file rather than changing the API.
+ignore:
+  - "lib/akami/wsse/signature.rb":
+      - Naming/ConstantName

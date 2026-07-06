@@ -11,7 +11,7 @@ module Akami
     end
 
     def local_name_xpath(xpath)
-      xpath.gsub(%r{([/]*)([A-Za-z]+)([/]*)}) { "#{$1}*[local-name()='#{$2}']#{$3}" }
+      xpath.gsub(%r{(/*)([A-Za-z]+)(/*)}) { "#{$1}*[local-name()='#{$2}']#{$3}" }
     end
   end
 end

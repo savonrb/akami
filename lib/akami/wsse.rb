@@ -9,12 +9,10 @@ require "akami/wsse/verify_signature"
 require "akami/wsse/signature"
 
 module Akami
-
   # = Akami::WSSE
   #
   # Building Web Service Security.
   class WSSE
-
     # Namespace for WS Security Secext.
     WSE_NAMESPACE = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd"
 
@@ -94,11 +92,11 @@ module Akami
       h = merge_hashes_with_keys(h, wsu_timestamp) if timestamp?
       h = merge_hashes_with_keys(h, wsse_username_token) if username_token?
 
-      return '' unless h
+      return "" unless h
       Gyoku.xml h
     end
 
-  private
+    private
 
     def merge_hashes_with_keys(hash_one, hash_two)
       return hash_two unless hash_one
@@ -116,14 +114,14 @@ module Akami
           "wsse:Nonce" => Base64.encode64(nonce).chomp,
           "wsu:Created" => timestamp,
           "wsse:Password" => digest_password,
-          :attributes! => { "wsse:Password" => { "Type" => PASSWORD_DIGEST_URI },  "wsse:Nonce" => { "EncodingType" => BASE64_URI } }
+          :attributes! => {"wsse:Password" => {"Type" => PASSWORD_DIGEST_URI}, "wsse:Nonce" => {"EncodingType" => BASE64_URI}}
         # clear the nonce after each use
         @nonce = nil
       else
         token = security_hash :wsse, "UsernameToken",
           "wsse:Username" => username,
           "wsse:Password" => password,
-          :attributes! => { "wsse:Password" => { "Type" => PASSWORD_TEXT_URI } }
+          :attributes! => {"wsse:Password" => {"Type" => PASSWORD_TEXT_URI}}
       end
       token
     end
@@ -146,7 +144,7 @@ module Akami
 
     # Returns a Hash containing wsse/wsu Security details for a given
     # +namespace+, +tag+ and +hash+.
-    def security_hash(namespace, tag, hash, extra_info = {}, signature_request=false)
+    def security_hash(namespace, tag, hash, extra_info = {}, signature_request = false)
       key = [namespace, tag].compact.join(":")
 
       sec_hash = {
@@ -154,15 +152,15 @@ module Akami
           key => hash,
           :order! => [key]
         },
-        :attributes! => { "wsse:Security" => { "xmlns:wsse" => WSE_NAMESPACE } }
+        :attributes! => {"wsse:Security" => {"xmlns:wsse" => WSE_NAMESPACE}}
       }
 
       sec_hash["wsse:Security"].merge!(extra_info) unless extra_info.empty?
 
       if signature_request
-        sec_hash[:attributes!].merge!("soapenv:mustUnderstand" => "1")
+        sec_hash[:attributes!]["soapenv:mustUnderstand"] = "1"
       else
-        sec_hash["wsse:Security"].merge!(:attributes! => { key => { "wsu:Id" => "#{tag}-#{count}", "xmlns:wsu" => WSU_NAMESPACE } })
+        sec_hash["wsse:Security"][:attributes!] = {key => {"wsu:Id" => "#{tag}-#{count}", "xmlns:wsu" => WSU_NAMESPACE}}
       end
 
       sec_hash
