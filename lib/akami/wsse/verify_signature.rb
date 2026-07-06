@@ -1,5 +1,5 @@
-require 'nokogiri'
-require 'openssl'
+require "nokogiri"
+require "openssl"
 
 module Akami
   class WSSE
@@ -22,9 +22,9 @@ module Akami
       def namespaces
         @namespaces ||= {
           wse: Akami::WSSE::WSE_NAMESPACE,
-          ds:  'http://www.w3.org/2000/09/xmldsig#',
+          ds: "http://www.w3.org/2000/09/xmldsig#",
           wsu: Akami::WSSE::WSU_NAMESPACE,
-          ec:  Akami::WSSE::Signature::ExclusiveXMLCanonicalizationAlgorithm,
+          ec: Akami::WSSE::Signature::ExclusiveXMLCanonicalizationAlgorithm
         }
       end
 
@@ -33,7 +33,7 @@ module Akami
 
       # Returns signer's certificate, bundled in signed document
       def certificate
-        certificate_value = document.at_xpath('//wse:Security/wse:BinarySecurityToken', namespaces).text.strip
+        certificate_value = document.at_xpath("//wse:Security/wse:BinarySecurityToken", namespaces).text.strip
         OpenSSL::X509::Certificate.new Base64.decode64(certificate_value)
       end
 
@@ -41,7 +41,7 @@ module Akami
       def valid?
         verify
       rescue InvalidDigest, InvalidSignedValue
-        return false
+        false
       end
 
       # Validates document signature and digests and raises if anything mismatches.
@@ -59,30 +59,28 @@ module Akami
       #
       #   digesters['http://www.w3.org/2001/04/xmldsig-more#rsa-sha512'] = OpenSSL::Digest::SHA512.new
 
-      def digesters
-        @digesters
-      end
+      attr_reader :digesters
 
       private
 
       def verify
-        document.xpath('//wse:Security/ds:Signature/ds:SignedInfo/ds:Reference', namespaces).each do |ref|
-          digest_algorithm = ref.at_xpath('//ds:DigestMethod', namespaces)['Algorithm']
+        document.xpath("//wse:Security/ds:Signature/ds:SignedInfo/ds:Reference", namespaces).each do |ref|
+          digest_algorithm = ref.at_xpath("//ds:DigestMethod", namespaces)["Algorithm"]
 
-          transform_inclusive_ns = inclusive_namespaces(ref, './/ds:Transforms/ds:Transform/ec:InclusiveNamespaces')
+          transform_inclusive_ns = inclusive_namespaces(ref, ".//ds:Transforms/ds:Transform/ec:InclusiveNamespaces")
 
-          element_id = ref.attributes['URI'].value[1..-1] # strip leading '#'
+          element_id = ref.attributes["URI"].value[1..] # strip leading '#'
           element = document.at_xpath(%(//*[@wsu:Id="#{element_id}"]), namespaces)
           unless supplied_digest(element) == generate_digest(element, digest_algorithm, transform_inclusive_ns)
             raise InvalidDigest, "Invalid Digest for #{element_id}"
           end
         end
 
-        canonicalization_inclusive_ns = inclusive_namespaces(document, '//ds:CanonicalizationMethod/ec:InclusiveNamespaces')
+        canonicalization_inclusive_ns = inclusive_namespaces(document, "//ds:CanonicalizationMethod/ec:InclusiveNamespaces")
 
         data = canonicalize(signed_info, canonicalization_inclusive_ns)
         signature = Base64.decode64(signature_value)
-        signature_algorithm = document.at_xpath('//wse:Security/ds:Signature/ds:SignedInfo/ds:SignatureMethod', namespaces)['Algorithm']
+        signature_algorithm = document.at_xpath("//wse:Security/ds:Signature/ds:SignedInfo/ds:SignatureMethod", namespaces)["Algorithm"]
         signature_digester = digester_for_signature_method(signature_algorithm)
 
         certificate.public_key.verify(signature_digester, signature, data) or raise InvalidSignedValue, "Could not verify the signature value"
@@ -90,11 +88,11 @@ module Akami
 
       def inclusive_namespaces(ref, xpath)
         inclusive_namespaces_element = ref.at_xpath(xpath, namespaces)
-        inclusive_namespaces_element['PrefixList'].split if inclusive_namespaces_element
+        inclusive_namespaces_element["PrefixList"].split if inclusive_namespaces_element
       end
 
       def signed_info
-        document.at_xpath('//wse:Security/ds:Signature/ds:SignedInfo', namespaces)
+        document.at_xpath("//wse:Security/ds:Signature/ds:SignedInfo", namespaces)
       end
 
       # Generate digest for a given +element+ (or its XPath) with a given +algorithm+
@@ -106,11 +104,11 @@ module Akami
 
       def supplied_digest(element)
         element = document.at_xpath(element, namespaces) if element.is_a? String
-        find_digest_value element.attributes['Id'].value
+        find_digest_value element.attributes["Id"].value
       end
 
       def signature_value
-        element = document.at_xpath('//wse:Security/ds:Signature/ds:SignatureValue', namespaces)
+        element = document.at_xpath("//wse:Security/ds:Signature/ds:SignatureValue", namespaces)
         element ? element.text : ""
       end
 
@@ -126,8 +124,8 @@ module Akami
       # Returns digester for calculating digest for signature verification
       def digester_for_signature_method(algorithm_url)
         signature_digest_mapping = {
-          'http://www.w3.org/2000/09/xmldsig#rsa-sha1' => 'http://www.w3.org/2000/09/xmldsig#sha1',
-          'http://www.w3.org/2001/04/xmldsig-more#gostr34102001-gostr3411' => 'http://www.w3.org/2001/04/xmldsig-more#gostr3411',
+          "http://www.w3.org/2000/09/xmldsig#rsa-sha1" => "http://www.w3.org/2000/09/xmldsig#sha1",
+          "http://www.w3.org/2001/04/xmldsig-more#gostr34102001-gostr3411" => "http://www.w3.org/2001/04/xmldsig-more#gostr3411"
         }
         digest_url = signature_digest_mapping[algorithm_url] || algorithm_url
         digester(digest_url)
@@ -135,23 +133,23 @@ module Akami
 
       # Constructors for known digest calculating objects
       DIGESTERS = {
-          # SHA1
-          'http://www.w3.org/2000/09/xmldsig#sha1' => lambda { OpenSSL::Digest::SHA1.new },
-          # SHA 256
-          'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256' => lambda { OpenSSL::Digest::SHA256.new },
-          # GOST R 34.11-94
-          # You need correctly configured gost engine in your system OpenSSL, requires OpenSSL >= 1.0.0
-          # see https://github.com/openssl/openssl/blob/master/engines/ccgost/README.gost
-          'http://www.w3.org/2001/04/xmldsig-more#gostr3411' => lambda {
-            if defined? JRUBY_VERSION
-              OpenSSL::Digest.new('GOST3411')
-            else
-              OpenSSL::Engine.load
-              gost_engine = OpenSSL::Engine.by_id('gost')
-              gost_engine.set_default(0xFFFF)
-              gost_engine.digest('md_gost94')
-            end
-          },
+        # SHA1
+        "http://www.w3.org/2000/09/xmldsig#sha1" => lambda { OpenSSL::Digest.new("SHA1") },
+        # SHA 256
+        "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256" => lambda { OpenSSL::Digest.new("SHA256") },
+        # GOST R 34.11-94
+        # You need correctly configured gost engine in your system OpenSSL, requires OpenSSL >= 1.0.0
+        # see https://github.com/openssl/openssl/blob/master/engines/ccgost/README.gost
+        "http://www.w3.org/2001/04/xmldsig-more#gostr3411" => lambda {
+          if defined? JRUBY_VERSION
+            OpenSSL::Digest.new("GOST3411")
+          else
+            OpenSSL::Engine.load
+            gost_engine = OpenSSL::Engine.by_id("gost")
+            gost_engine.set_default(0xFFFF)
+            gost_engine.digest("md_gost94")
+          end
+        }
       }
 
       # Returns instance of +OpenSSL::Digest+ class, initialized, reset, and ready to calculate new hashes.
@@ -163,7 +161,6 @@ module Akami
         end
         @digesters[url].reset
       end
-
     end
   end
 end

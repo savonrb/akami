@@ -2,10 +2,9 @@ module Akami
   class WSSE
     # Contains certs for WSSE::Signature
     class Certs
-
       def initialize(certs = {})
         certs.each do |key, value|
-          self.send :"#{key}=", value
+          send :"#{key}=", value
         end
       end
 

@@ -23,14 +23,14 @@ module Akami
         @document = Nokogiri::XML(document)
       end
 
-      ExclusiveXMLCanonicalizationAlgorithm = 'http://www.w3.org/2001/10/xml-exc-c14n#'.freeze
-      RSASHA1SignatureAlgorithm = 'http://www.w3.org/2000/09/xmldsig#rsa-sha1'.freeze
-      SHA1DigestAlgorithm = 'http://www.w3.org/2000/09/xmldsig#sha1'.freeze
+      ExclusiveXMLCanonicalizationAlgorithm = "http://www.w3.org/2001/10/xml-exc-c14n#".freeze
+      RSASHA1SignatureAlgorithm = "http://www.w3.org/2000/09/xmldsig#rsa-sha1".freeze
+      SHA1DigestAlgorithm = "http://www.w3.org/2000/09/xmldsig#sha1".freeze
 
-      X509v3ValueType = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3'.freeze
-      Base64EncodingType = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary'.freeze
+      X509v3ValueType = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-x509-token-profile-1.0#X509v3".freeze
+      Base64EncodingType = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0#Base64Binary".freeze
 
-      SignatureNamespace = 'http://www.w3.org/2000/09/xmldsig#'.freeze
+      SignatureNamespace = "http://www.w3.org/2000/09/xmldsig#".freeze
 
       def initialize(certs = Certs.new)
         @certs = certs
@@ -57,7 +57,7 @@ module Akami
       def body_attributes
         {
           "xmlns:wsu" => Akami::WSSE::WSU_NAMESPACE,
-          "wsu:Id" => body_id,
+          "wsu:Id" => body_id
         }
       end
 
@@ -65,20 +65,20 @@ module Akami
         return {} unless have_document?
 
         sig = signed_info.merge(key_info).merge(signature_value)
-        sig.merge! :order! => []
-        [ "SignedInfo", "SignatureValue", "KeyInfo" ].each do |key|
+        sig[:order!] = []
+        ["SignedInfo", "SignatureValue", "KeyInfo"].each do |key|
           sig[:order!] << key if sig[key]
         end
 
         token = {
           "Signature" => sig,
-          :attributes! => { "Signature" => { "xmlns" => SignatureNamespace } },
+          :attributes! => {"Signature" => {"xmlns" => SignatureNamespace}}
         }
 
         Akami::HashHelper.deep_merge!(token, binary_security_token) if certs.cert
 
-        token.merge! :order! => []
-        [ "wsse:BinarySecurityToken", "Signature" ].each do |key|
+        token[:order!] = []
+        ["wsse:BinarySecurityToken", "Signature"].each do |key|
           token[:order!] << key if token[key]
         end
 
@@ -89,13 +89,13 @@ module Akami
 
       def binary_security_token
         {
-          "wsse:BinarySecurityToken" => Base64.encode64(certs.cert.to_der).gsub("\n", ''),
-          :attributes! => { "wsse:BinarySecurityToken" => {
+          "wsse:BinarySecurityToken" => Base64.encode64(certs.cert.to_der).delete("\n"),
+          :attributes! => {"wsse:BinarySecurityToken" => {
             "wsu:Id" => security_token_id,
-            'EncodingType' => Base64EncodingType,
-            'ValueType' => X509v3ValueType,
-            "xmlns:wsu" => Akami::WSSE::WSU_NAMESPACE,
-          } }
+            "EncodingType" => Base64EncodingType,
+            "ValueType" => X509v3ValueType,
+            "xmlns:wsu" => Akami::WSSE::WSU_NAMESPACE
+          }}
         }
       end
 
@@ -104,18 +104,18 @@ module Akami
           "KeyInfo" => {
             "wsse:SecurityTokenReference" => {
               "wsse:Reference/" => nil,
-              :attributes! => { "wsse:Reference/" => {
+              :attributes! => {"wsse:Reference/" => {
                 "ValueType" => X509v3ValueType,
-                "URI" => "##{security_token_id}",
-              } }
+                "URI" => "##{security_token_id}"
+              }}
             },
-            :attributes! => { "wsse:SecurityTokenReference" => { "xmlns:wsu" => "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" } },
-          },
+            :attributes! => {"wsse:SecurityTokenReference" => {"xmlns:wsu" => "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"}}
+          }
         }
       end
 
       def signature_value
-        { "SignatureValue" => the_signature }
+        {"SignatureValue" => the_signature}
       rescue MissingCertificate
         {}
       end
@@ -126,16 +126,16 @@ module Akami
             "CanonicalizationMethod/" => nil,
             "SignatureMethod/" => nil,
             "Reference" => [
-              #signed_info_transforms.merge(signed_info_digest_method).merge({ "DigestValue" => timestamp_digest }),
-              signed_info_transforms.merge(signed_info_digest_method).merge({ "DigestValue" => body_digest }),
+              # signed_info_transforms.merge(signed_info_digest_method).merge({ "DigestValue" => timestamp_digest }),
+              signed_info_transforms.merge(signed_info_digest_method).merge({"DigestValue" => body_digest})
             ],
             :attributes! => {
-              "CanonicalizationMethod/" => { "Algorithm" => ExclusiveXMLCanonicalizationAlgorithm },
-              "SignatureMethod/" => { "Algorithm" => RSASHA1SignatureAlgorithm },
-              "Reference" => { "URI" => ["##{body_id}"] },
+              "CanonicalizationMethod/" => {"Algorithm" => ExclusiveXMLCanonicalizationAlgorithm},
+              "SignatureMethod/" => {"Algorithm" => RSASHA1SignatureAlgorithm},
+              "Reference" => {"URI" => ["##{body_id}"]}
             },
-            :order! => [ "CanonicalizationMethod/", "SignatureMethod/", "Reference" ],
-          },
+            :order! => ["CanonicalizationMethod/", "SignatureMethod/", "Reference"]
+          }
         }
       end
 
@@ -143,8 +143,8 @@ module Akami
         raise MissingCertificate, "Expected a private_key for signing" unless certs.private_key
         signed_info = at_xpath(@document, "//Envelope/Header/Security/Signature/SignedInfo")
         signed_info = signed_info ? canonicalize(signed_info) : ""
-        signature = certs.private_key.sign(OpenSSL::Digest::SHA1.new, signed_info)
-        Base64.encode64(signature).gsub("\n", '') # TODO: DRY calls to Base64.encode64(...).gsub("\n", '')
+        signature = certs.private_key.sign(OpenSSL::Digest.new("SHA1"), signed_info)
+        Base64.encode64(signature).delete("\n") # TODO: DRY calls to Base64.encode64(...).gsub("\n", '')
       end
 
       def body_digest
@@ -153,15 +153,15 @@ module Akami
       end
 
       def signed_info_digest_method
-        { "DigestMethod/" => nil, :attributes! => { "DigestMethod/" => { "Algorithm" => SHA1DigestAlgorithm } } }
+        {"DigestMethod/" => nil, :attributes! => {"DigestMethod/" => {"Algorithm" => SHA1DigestAlgorithm}}}
       end
 
       def signed_info_transforms
-        { "Transforms" => { "Transform/" => nil, :attributes! => { "Transform/" => { "Algorithm" => ExclusiveXMLCanonicalizationAlgorithm } } } }
+        {"Transforms" => {"Transform/" => nil, :attributes! => {"Transform/" => {"Algorithm" => ExclusiveXMLCanonicalizationAlgorithm}}}}
       end
 
       def uid
-        OpenSSL::Digest::SHA1.hexdigest([Time.now, rand].collect(&:to_s).join('/'))
+        OpenSSL::Digest::SHA1.hexdigest([Time.now, rand].join("/"))
       end
     end
   end
