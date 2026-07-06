@@ -66,7 +66,7 @@ jobs:
     # jruby is included provisionally: akami's OpenSSL-based signing and GOST
     # engine make its jruby support unverified, so it does not block either
     # until a green run proves it can be promoted to a required build.
-    continue-on-error: ${{ matrix.ruby == 'head' || matrix.ruby == 'truffleruby-head' || matrix.ruby == 'jruby-9.4.8' }}
+    continue-on-error: ${{ matrix.ruby == 'head' || matrix.ruby == 'truffleruby-head' }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
