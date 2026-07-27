@@ -1,0 +1,6 @@
+# Reviews are required by
+#
+# - @pennylane-hq/electronic-invoicing-core as main usage of this branch is for the invoicing-hub repository,
+# maintained by this squad
+
+* @pennylane-hq/electronic-invoicing-core

@@ -1,0 +1,206 @@
+---
+################################################################################
+#
+# IMPORTANT: This file includes some important legal decisions that were
+# made by the legal team so before making changes, reach out to the slack
+# channel #licenses-tech-stack to ask around and get more context.
+#
+# extracted from jeancaisse on 2025-10-10
+# jeancaisse commit hash: 8ca5b0109437932bc7171941d26f68a26832fe80
+#
+################################################################################
+
+########################################
+#
+# LICENSES WE CAN USE WITHOUT CONCERN
+#
+########################################
+
+- [permit, 2-clause BSDL]
+- [permit, Apache 2.0]
+- [permit, Apache License (2.0)]
+- [permit, BlueOak-1.0.0]
+- [permit, BSD Zero Clause License]
+- [permit, BSD]
+- [permit, Hippocratic-2.1]
+- [permit, ISC]
+- [permit, MIT or MPL-2.0]
+- [permit, MIT]
+- [permit, MIT-0]
+- [permit, New BSD]
+- [permit, Public Domain]
+- [permit, Python-2.0]
+- [permit, ruby]
+- [permit, Simplified BSD]
+- [permit, Unlicense]
+- [permit, WTFPL]
+- [permit, Zlib]
+- [permit, CC0 1.0 Universal]
+- - :approve
+  - Pennylane
+  - :why: Our own software
+- - :approve
+  - pennylane
+  - :why: Our own software
+- - :approve
+  - '.'
+  - :why: Our own software
+
+########################################
+#
+# COMMERCIAL LICENSES SECTION
+#
+########################################
+
+- - :approve
+  - sidekiq
+  - :why: We have purchased a commercial license
+- - :approve
+  - sidekiq-pro
+  - :why: We have purchased a commercial license
+- - :approve
+  - hexapdf
+  - :why: We have purchased a commercial license
+- - :approve
+  - fintecture
+  - :why: Covered by our commercial relationship
+
+########################################
+#
+# NOT IDEAL BUT NON-BLOCKING
+# we want to manually review and approve software using those licenses on
+# a case-by-case approach because it's debatable setup
+#
+# Those licenses notably include:
+# - Creative Commons versions (CC-BY is generally OK, but needs double-checking)
+# - LGPL, which is confusing between Lesser GPL and Library GPL and its many versions.
+# - Mozilla Public License (MPL) which is generally OK as well, but let's be conservative
+#
+########################################
+
+- - :approve
+  - caniuse-lite
+  - :why: >
+      Using CC-BY-4.0 which is permissive:
+      https://github.com/browserslist/caniuse-lite?tab=CC-BY-4.0-1-ov-file#readme
+
+- - :approve
+  - llhttp-ffi
+  - :why: Mozilla Public License 2.0 is fine
+
+- - :approve
+  - mdn-data
+  - :why: >
+      Using CC0-1.0 which is permissive:
+      https://github.com/mdn/data?tab=CC0-1.0-1-ov-file#readme
+
+- - :approve
+  - postcss-values-parser
+  - :why: Mozilla Public License 2.0 is fine
+
+########################################
+#
+# MISDOCUMENTED VALID LICENSES
+#
+########################################
+
+- - :approve
+  - aws_cf_signer
+  - :why: MIT license https://github.com/dylanvaughn/aws_cf_signer?tab=MIT-1-ov-file#readme
+- - :approve
+  - '@segment/facade'
+  - :why: MIT license https://github.com/segmentio/facade?tab=MIT-1-ov-file
+- - :approve
+  - '@segment/isodate'
+  - :why: MIT license https://github.com/segmentio/isodate?tab=MIT-1-ov-file
+- - :approve
+  - '@segment/isodate-traverse'
+  - :why: MIT license https://github.com/segmentio/isodate-traverse?tab=MIT-1-ov-file
+- - :approve
+  - brakeman
+  - :why: https://github.com/presidentbeef/brakeman/blob/main/LICENSE.md
+- - :approve
+  - color-convert
+  - :why: MIT license https://github.com/Qix-/color-convert#MIT-1-ov-file
+- - :approve
+  - decko
+  - :why: MIT license https://github.com/developit/decko?tab=MIT-1-ov-file
+- - :approve
+  - exif-parser
+  - :why: MIT license https://github.com/bwindels/exif-parser?tab=MIT-1-ov-file
+- - :approve
+  - khroma
+  - :why: MIT license https://github.com/fabiospampinato/khroma?tab=MIT-1-ov-file
+- - :approve
+  - new-date
+  - :why: MIT license https://github.com/segmentio/new-date?tab=MIT-1-ov-file
+- - :approve
+  - stickyfill
+  - :why: MIT license https://github.com/webmodules/stickyfill?tab=MIT-1-ov-file
+- - :approve
+  - tosource
+  - :why: Zlib license https://github.com/marcello3d/node-tosource?tab=Zlib-1-ov-file
+- - :approve
+  - uuid-v4
+  - :why: MIT license https://www.npmjs.com/package/uuid-v4
+- - :approve
+  - pdf-core
+  - :why: Matz' Ruby license https://github.com/prawnpdf/pdf-core?tab=License-1-ov-file
+- - :approve
+  - prawn
+  - :why: Matz' Ruby license https://github.com/prawnpdf/prawn?tab=License-1-ov-file
+- - :approve
+  - ttfunk
+  - :why: Matz' Ruby license https://github.com/prawnpdf/ttfunk?tab=License-1-ov-file
+- - :approve
+  - '@typescript-eslint/parser'
+  - :why: MIT license https://github.com/typescript-eslint/typescript-eslint/blob/main/packages/parser/LICENSE
+- - :approve
+  - 'atomically'
+  - :why: MIT license https://github.com/fabiospampinato/atomically/blob/master/license
+- - :approve
+  - 'when-exit'
+  - :why: MIT license https://github.com/fabiospampinato/when-exit/blob/master/license
+- - :approve
+  - 'stubborn-fs'
+  - :why: MIT license https://github.com/fabiospampinato/stubborn-fs/blob/master/license
+- - :approve
+  - '@auth0/xmldom'
+  - :why: MIT license https://github.com/auth0/xmldom/blob/master/LICENSE
+- - :approve
+  - 'valid-url'
+  - :why: MIT license https://github.com/ogt/valid-url/blob/master/LICENSE
+- - :approve
+  - 'front_matter_parser'
+  - :why: MIT license https://github.com/waiting-for-dev/front_matter_parser/blob/main/LICENSE.txt
+- - :approve
+  - customerio-gist-web
+  - :why: >
+      MIT license; see LICENSE file in package
+      https://unpkg.com/browse/customerio-gist-web@3.16.10/LICENSE
+########################################
+#
+# NOT IDEAL BUT NOT A BLOCKER
+#
+########################################
+
+- - :approve
+  - mini_exiftool
+  - :why: >
+      This is LGPL-2.1, a weak copyleft license that we can use as long as we
+      comply with some requirements available here:
+      https://pennylane-org.slack.com/archives/C04HEQLHDTQ/p1732882347125169?thread_ts=1732882100.984249&cid=C04HEQLHDTQ
+
+- - :approve
+  - rchardet
+  - :why: >
+      This is LGPL-2.1, a weak copyleft license that we can use as long as we
+      comply with some requirements available here:
+      https://pennylane-org.slack.com/archives/C04HEQLHDTQ/p1732882347125169?thread_ts=1732882100.984249&cid=C04HEQLHDTQ
+
+- - :approve
+  - epics
+  - :why: >
+      This is LGPL-2.1, a weak copyleft license that we can use as long as we
+      comply with some requirements available here:
+      https://pennylane-org.slack.com/archives/C04HEQLHDTQ/p1741249208399559
