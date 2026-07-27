@@ -1,0 +1,267 @@
+plugins:
+  - rubocop-performance
+  - rubocop-rspec
+
+AllCops:
+  TargetRubyVersion: 3.3.7
+  NewCops: enable
+  MaxFilesInCache: 100000
+
+RSpec:
+  Language:
+    Expectations:
+      - assert
+      - assert_response_schema_confirm
+      - assert_request_schema_confirm
+      - expect_no_offenses
+      - expect_offense
+      - assert_requested
+      - expect_offenders
+      - expect_no_offenders
+      - expect_raise_error
+      - expect_business_ratio_is_correct
+      - expect_error
+      - expect_to_alert
+      - expect_not_to_alert
+
+# Metrics cops
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/BlockLength:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 120
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Metrics/ParameterLists:
+  CountKeywordArgs: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+# Naming cops
+Naming/MethodName:
+  Enabled: true
+
+Naming/VariableName:
+  Enabled: true
+
+Naming/VariableNumber:
+  Enabled: false
+
+Naming/InclusiveLanguage:
+  Enabled: false
+
+# Layout cops
+Layout/DotPosition:
+  EnforcedStyle: leading
+
+Layout/LineLength:
+  Max: 120
+  Exclude:
+    - spec/**/*
+
+# Use 2 spaces for indentation.
+Layout/IndentationWidth:
+  Enabled: true
+  Width: 2
+
+Layout/IndentationConsistency:
+  Enabled: true
+
+Layout/BlockEndNewline:
+  Enabled: true
+
+Layout/BlockAlignment:
+  EnforcedStyleAlignWith: start_of_block
+
+Layout/CaseIndentation:
+  EnforcedStyle: end
+
+Layout/FirstArgumentIndentation:
+  EnforcedStyle: consistent
+
+Layout/FirstArrayElementIndentation:
+  EnforcedStyle: consistent
+
+Layout/FirstHashElementIndentation:
+  EnforcedStyle: consistent
+
+Layout/MultilineMethodCallIndentation:
+  Enabled: true
+  EnforcedStyle: indented
+  IndentationWidth: 2
+
+Layout/MultilineOperationIndentation:
+  EnforcedStyle: indented
+
+Layout/MultilineHashKeyLineBreaks:
+  Enabled: true
+
+Layout/EndAlignment:
+  EnforcedStyleAlignWith: variable
+
+Layout/TrailingWhitespace:
+  Enabled: true
+
+Layout/SpaceBeforeBrackets:
+  Enabled: false
+
+Layout/FirstMethodArgumentLineBreak:
+  Enabled: true
+
+Layout/FirstMethodParameterLineBreak:
+  Enabled: true
+
+Layout/FirstArrayElementLineBreak:
+  Enabled: true
+
+Layout/FirstHashElementLineBreak:
+  Enabled: true
+
+# Linter cops
+
+# As rubocop says, this cop can change return type :
+# https://github.com/rubocop-hq/rubocop/blob/db37beaf077ab68880b00f37949ebbfb8852bfed/lib/rubocop/cop/lint/redundant_safe_navigation.rb#L12
+Lint/RedundantSafeNavigation:
+  Enabled: false
+
+Lint/MissingSuper:
+  Enabled: false
+
+Lint/SuppressedException:
+  Enabled: false
+
+Lint/AmbiguousBlockAssociation:
+  AllowedMethods:
+    - change
+    - not_change
+
+# Style cops
+
+Style/AsciiComments:
+  Enabled: false
+
+Style/BlockComments:
+  Enabled: false
+
+Style/ExplicitBlockArgument:
+  Enabled: false
+
+Style/EvalWithLocation:
+  Enabled: false
+
+Style/FetchEnvVar:
+  Enabled: false
+
+Style/FormatStringToken:
+  Enabled: false
+
+Style/FormatString:
+  EnforcedStyle: percent
+
+Style/FrozenStringLiteralComment:
+  SafeAutoCorrect: true
+
+Style/Documentation:
+  Enabled: false
+
+Style/NumberedParametersLimit:
+  Max: 2
+
+Style/NumericPredicate:
+  Enabled: false
+
+Style/RaiseArgs:
+  EnforcedStyle: compact
+
+Style/TrailingCommaInArguments:
+  EnforcedStyleForMultiline: consistent_comma
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: consistent_comma
+
+Style/ClassAndModuleChildren:
+  Enabled: true
+
+Style/DoubleNegation:
+  Enabled: false
+
+Style/OpenStructUse:
+  Enabled: false
+
+Style/HashSyntax:
+  EnforcedShorthandSyntax: never
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/ModuleFunction:
+  EnforcedStyle: forbidden
+
+# RSpec cops
+
+RSpec/AnyInstance:
+  Enabled: false
+
+RSpec/BeEq:
+  Enabled: false
+
+RSpec/MultipleExpectations:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Enabled: false
+
+RSpec/LetSetup:
+  Enabled: false
+
+RSpec/NestedGroups:
+  Max: 8
+
+RSpec/MessageChain:
+  Enabled: false
+
+RSpec/MessageSpies:
+  EnforcedStyle: receive
+
+RSpec/InstanceVariable:
+  Enabled: false
+
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+
+RSpec/Pending:
+  Enabled: true
+
+RSpec/StubbedMock:
+  Enabled: false
+
+RSpec/VerifiedDoubles:
+  Enabled: false
+
+# Performance cop
+
+# This cop has false positives since `String#[1..]` works but `String#drop(1)` does not
+Performance/ArraySemiInfiniteRangeSlice:
+  Enabled: false
+
+Style/SafeNavigationChainLength:
+  Enabled: false
+
+RSpec/IndexedLet:
+  Enabled: false

@@ -5,6 +5,26 @@ on:
   - pull_request
 
 jobs:
+  license_checks:
+    name: License checks
+    runs-on: ubuntu-latest
+    env:
+      RAILS_ENV: test
+    steps:
+      - uses: actions/checkout@v5
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.4.7
+          bundler-cache: true # bundle installs and caches dependencies
+      - name: Run license checks
+        run: |
+          bundle exec license_finder || (cat <<-END && exit 1)
+
+            You seem to be introducing a new license into our stack, please reach out to
+            #licenses-tech-stack on slack to get guidance on the topic.
+          END
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -14,7 +34,7 @@ jobs:
     env:
       RAILS_ENV: test
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
         with:
@@ -22,3 +42,17 @@ jobs:
           bundler-cache: true # bundle installs and caches dependencies
       - name: Run tests
         run: bundle exec rake --trace
+
+  summary:
+    name: CI Summary
+    runs-on: ubuntu-latest
+    needs:
+      - test
+      - license_checks
+    if: always()
+
+    steps:
+      - name: Successful builds?
+        run: |
+          if ${{ needs.test.result != 'success' }}; then exit 1; fi
+          if ${{ needs.license_checks.result != 'success' }}; then exit 1; fi
