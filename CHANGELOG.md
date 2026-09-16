@@ -1,3 +1,9 @@
+## 1.4.0 (2026-09-16)
+
+* Feature: [#47](https://github.com/savonrb/akami/pull/47) Support signed WS-Security timestamps. `Signature.new` accepts a `timestamp: true` option (plus optional `created_at`/`expires_at`) that adds a `wsu:Timestamp` to the Security header and covers it with its own digest Reference, so the timestamp cannot be altered without invalidating the signature.
+* Feature: [#46](https://github.com/savonrb/akami/pull/46) Handle InclusiveNamespaces configuration when verifying signatures.
+* Fix: [#62](https://github.com/savonrb/akami/pull/62) Fix signature verification for multi-token documents and signed attachments. The signer's certificate is now selected via the `SecurityTokenReference` instead of always taking the first `BinarySecurityToken`, and `cid:` attachment references can be verified against caller-supplied `decrypted_attachments`.
+
 ## 1.3.3 (2024-02-13)
 
 * Explicitly declare base64 dep in gemfile (useful for testing against ruby-head).
@@ -32,3 +38,4 @@
 ## 1.0.0 (2011-07-03)
 
 * Initial version extracted from the [Savon](http://rubygems.org/gems/savon) library.
+
